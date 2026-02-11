@@ -163,21 +163,51 @@ async function updateSnoozeDisplay() {
   const snoozeStatus = document.getElementById('snoozeStatus');
   const snoozeTimer = document.getElementById('snoozeTimer');
   const snoozeToggle = document.getElementById('snoozeToggle');
+  const headerSnoozeIcon = document.getElementById('headerSnoozeIcon');
+  const headerSnoozeBtn = document.getElementById('headerSnoozeBtn');
   
   if (data.snoozeUntil && Date.now() < data.snoozeUntil) {
     const timeLeft = data.snoozeUntil - Date.now();
     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     
-    snoozeStatus.textContent = '🔕 Snoozed';
-    snoozeStatus.className = 'snooze-status active';
-    snoozeTimer.textContent = `Resumes in ${hours}h ${minutes}m`;
-    snoozeToggle.classList.add('active');
+    if (snoozeStatus) {
+      snoozeStatus.textContent = '🔕 Snoozed';
+      snoozeStatus.className = 'snooze-status active';
+    }
+    if (snoozeTimer) {
+      snoozeTimer.textContent = `Resumes in ${hours}h ${minutes}m`;
+    }
+    if (snoozeToggle) {
+      snoozeToggle.classList.add('active');
+    }
+    
+    // Update header snooze button
+    if (headerSnoozeIcon && headerSnoozeBtn) {
+      headerSnoozeIcon.textContent = '🔕';
+      headerSnoozeBtn.title = `Snoozed (${hours}h ${minutes}m left) - Click to disable`;
+      headerSnoozeBtn.style.borderColor = '#ff9800';
+      headerSnoozeBtn.style.color = '#ff9800';
+    }
   } else {
-    snoozeStatus.textContent = 'Snooze Off';
-    snoozeStatus.className = 'snooze-status inactive';
-    snoozeTimer.textContent = '';
-    snoozeToggle.classList.remove('active');
+    if (snoozeStatus) {
+      snoozeStatus.textContent = 'Snooze Off';
+      snoozeStatus.className = 'snooze-status inactive';
+    }
+    if (snoozeTimer) {
+      snoozeTimer.textContent = '';
+    }
+    if (snoozeToggle) {
+      snoozeToggle.classList.remove('active');
+    }
+    
+    // Update header snooze button
+    if (headerSnoozeIcon && headerSnoozeBtn) {
+      headerSnoozeIcon.textContent = '🔔';
+      headerSnoozeBtn.title = 'Snooze for 3 hours';
+      headerSnoozeBtn.style.borderColor = 'rgba(255, 215, 0, 0.5)';
+      headerSnoozeBtn.style.color = '#FFD700';
+    }
   }
 }
 
@@ -693,6 +723,12 @@ document.getElementById('copyBobBtn').onclick = copyBobEntries;
 // Open full view in new tab
 document.getElementById('openFullView').onclick = function() {
   chrome.tabs.create({ url: chrome.runtime.getURL("src/html/fullview.html") });
+};
+
+// Header snooze button handler
+document.getElementById('headerSnoozeBtn').onclick = async function() {
+  await toggleSnooze();
+  await updateSnoozeDisplay();
 };
 
 // Update copy button text based on filter
