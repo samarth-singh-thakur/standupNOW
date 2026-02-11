@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "StandupNow",
+  "version": "1.0.0",
+  "description": "Every hour, prompts you to log what you did in the last hour.",
+  "permissions": ["alarms", "notifications", "storage", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "StandupNow",
+    "default_popup": "checkin.html",
+    "default_icon": {
+      "16": "icon.png",
+      "32": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png",
+    "32": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
