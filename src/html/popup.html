@@ -1,0 +1,638 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>StandupNow</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
+      background: #000000;
+      color: #e0e0e0;
+      width: 585px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .container {
+      background: #1a1a1a;
+    }
+    
+    .header {
+      background: #000000;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #FFD700;
+    }
+    
+    .header-top {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      flex: 1;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    
+    .header-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+      color: #FFD700;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      font-family: inherit;
+    }
+    
+    .header-btn:hover {
+      background: rgba(255, 215, 0, 0.1);
+      border-color: #FFD700;
+      transform: scale(1.1);
+    }
+    
+    .snooze-btn {
+      font-size: 16px;
+    }
+    
+    .open-btn {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 6px 12px;
+      gap: 4px;
+    }
+    
+    .settings-btn {
+      font-size: 20px;
+      padding: 5px;
+    }
+    
+    .settings-btn:hover {
+      transform: rotate(90deg);
+    }
+    
+    .timer-display {
+      background: rgba(255, 215, 0, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .timer-section {
+      flex: 1;
+    }
+    
+    .timer-label {
+      font-size: 10px;
+      opacity: 0.9;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .timer {
+      font-size: 20px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+    
+    .current-time-section {
+      flex: 1;
+      text-align: right;
+    }
+    
+    .current-time-label {
+      font-size: 10px;
+      opacity: 0.9;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .current-time {
+      font-size: 20px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+    
+    .current-date {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+    
+    .main-content {
+      padding: 20px;
+      background: #1a1a1a;
+    }
+    
+    .input-section {
+      margin-bottom: 20px;
+      background: rgba(255, 215, 0, 0.05);
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 215, 0, 0.3);
+      animation: pulseGlow 2s ease-in-out infinite;
+      position: relative;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+      }
+    }
+    
+    .input-section::before {
+      content: '✍️ Quick jot down your progress';
+      position: absolute;
+      top: -12px;
+      left: 20px;
+      background: #1a1a1a;
+      padding: 4px 12px;
+      font-size: 11px;
+      color: #FFD700;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 215, 0, 0.5);
+    }
+    
+    .input-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFD700;
+      margin-bottom: 12px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    #note {
+      width: 100%;
+      padding: 15px;
+      border: 3px solid #FFD700;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: all 0.3s;
+      background: #000000;
+      color: #e0e0e0;
+      min-height: 120px;
+      line-height: 1.6;
+    }
+    
+    #note::placeholder {
+      color: #888;
+      font-style: italic;
+    }
+    
+    #note:focus {
+      outline: none;
+      border-color: #FFD700;
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.5), inset 0 0 10px rgba(255, 215, 0, 0.1);
+      background: #0a0a0a;
+    }
+    
+    .save-btn {
+      width: 100%;
+      padding: 12px;
+      background: #FFD700;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      margin-top: 12px;
+      font-family: inherit;
+    }
+    
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      background: #FFC700;
+    }
+    
+    .save-btn:active {
+      transform: translateY(0);
+    }
+    
+    #status {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      min-height: 32px;
+    }
+    
+    #status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    #status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .entries-section {
+      border-top: 2px solid #2a2a2a;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFD700;
+    }
+    
+    .entry-count {
+      font-size: 11px;
+      color: #FFD700;
+      background: rgba(255, 215, 0, 0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .filter-btn {
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      font-family: inherit;
+    }
+    
+    .filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+    
+    .filter-btn[data-filter="all"] {
+      background: #4A90E2;
+      color: #fff;
+    }
+    
+    .filter-btn[data-filter="all"]:hover {
+      background: #357ABD;
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+    }
+    
+    .filter-btn[data-filter="all"].active {
+      background: #4A90E2;
+      box-shadow: 0 4px 15px rgba(74, 144, 226, 0.6);
+    }
+    
+    .filter-btn[data-filter="today"] {
+      background: #FFD700;
+      color: #000;
+    }
+    
+    .filter-btn[data-filter="today"]:hover {
+      background: #FFC700;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+    }
+    
+    .filter-btn[data-filter="today"].active {
+      background: #FFD700;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6);
+    }
+    
+    .filter-btn[data-filter="yesterday"] {
+      background: #9B59B6;
+      color: #fff;
+    }
+    
+    .filter-btn[data-filter="yesterday"]:hover {
+      background: #8E44AD;
+      box-shadow: 0 4px 12px rgba(155, 89, 182, 0.5);
+    }
+    
+    .filter-btn[data-filter="yesterday"].active {
+      background: #9B59B6;
+      box-shadow: 0 4px 15px rgba(155, 89, 182, 0.6);
+    }
+    
+    .filter-btn:not(.active) {
+      opacity: 0.6;
+    }
+    
+    .filter-btn:not(.active):hover {
+      opacity: 1;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 150px;
+      padding: 8px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      transition: all 0.3s;
+      font-family: inherit;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .search-box::placeholder {
+      color: #777;
+      font-size: 11px;
+    }
+    
+    .search-box:focus {
+      outline: none;
+      background: #333;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+    
+    .copy-today-btn {
+      width: 100%;
+      padding: 10px;
+      background: #FFD700;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+      font-family: inherit;
+    }
+    
+    .copy-today-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+      background: #FFC700;
+    }
+    
+    .copy-today-btn:active {
+      transform: translateY(0);
+    }
+    
+    .copy-today-btn.copied {
+      background: #4CAF50;
+    }
+    
+    .entries-container {
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    
+    .entries-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .entries-container::-webkit-scrollbar-track {
+      background: #2a2a2a;
+      border-radius: 10px;
+    }
+    
+    .entries-container::-webkit-scrollbar-thumb {
+      background: #FFD700;
+      border-radius: 10px;
+    }
+    
+    .entry {
+      background: #0f0f0f;
+      border-left: 4px solid #FFD700;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+      border: 1px solid #2a2a2a;
+    }
+    
+    .entry:hover {
+      background: #252525;
+      transform: translateX(4px);
+      border-color: #FFD700;
+    }
+    
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .entry-time {
+      font-size: 11px;
+      color: #FFD700;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .entry-note {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #b0b0b0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-bottom: 8px;
+    }
+    
+    .copy-btn {
+      padding: 6px 8px;
+      font-size: 16px;
+      background: #FFD700;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      font-weight: 700;
+    }
+    
+    .copy-btn:hover {
+      background: #FFC700;
+      transform: scale(1.1);
+    }
+    
+    .copy-btn.copied {
+      background: #4CAF50;
+    }
+    
+    .copy-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+    
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+    
+    .empty-state-text {
+      font-size: 14px;
+    }
+    
+    .quote {
+      text-align: center;
+      font-size: 10px;
+      color: #888;
+      margin-top: 15px;
+      padding: 8px;
+      background: rgba(255, 215, 0, 0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 215, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-top">
+        <h1>StandupNow</h1>
+        <div class="header-actions">
+          <button id="headerSnoozeBtn" class="header-btn snooze-btn" title="Snooze for 3 hours">
+            <span id="headerSnoozeIcon">🔔</span>
+          </button>
+          <button id="openFullView" class="header-btn open-btn" title="Open full app">
+            <span>Open</span>
+            <span style="font-size: 10px;">↗</span>
+          </button>
+          <button id="settingsIcon" class="header-btn settings-btn" title="Settings">⚙️</button>
+        </div>
+      </div>
+      <div class="timer-display">
+        <div class="timer-section">
+          <div class="timer-label">Next check-in</div>
+          <div class="timer" id="countdown">--:--:--</div>
+        </div>
+        <div class="current-time-section">
+          <div class="current-time-label">Current Time</div>
+          <div class="current-time" id="currentTime">--:-- --</div>
+          <div class="current-date" id="currentDate">--- --, ----</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="input-section">
+        <label class="input-label">Quick checkin</label>
+        <textarea id="note" rows="5" placeholder="Type here and hit Save or press Ctrl+Enter..." autofocus></textarea>
+      </div>
+      
+      <button id="save" class="save-btn">Save</button>
+      
+      <div id="status"></div>
+      
+      <div class="quote">
+        💡 <span class="quote-text">"What gets measured gets improved." — Peter Drucker</span>
+      </div>
+      
+      <div class="entries-section">
+        <div class="section-header">
+          <span class="section-title">Recent Activity</span>
+          <span class="entry-count" id="entryCount">0 entries</span>
+        </div>
+        
+        <div class="filter-controls">
+          <div class="filter-buttons">
+            <button class="filter-btn" data-filter="all">All</button>
+            <button class="filter-btn active" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="yesterday">Yesterday</button>
+          </div>
+          <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search in entries...">
+        </div>
+        
+        <button class="copy-today-btn" id="copyTodayBtn">📋 Copy Today's Entries</button>
+        
+        <div class="entries-container" id="entries"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../js/quotes.js"></script>
+  <script src="../js/popup.js"></script>
+</body>
+</html>

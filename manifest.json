@@ -9,7 +9,7 @@
   },
   "action": {
     "default_title": "StandupNow",
-    "default_popup": "src/html/checkin.html",
+    "default_popup": "src/html/popup.html",
     "default_icon": {
       "16": "images/icon.png",
       "32": "images/icon.png",

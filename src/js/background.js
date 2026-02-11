@@ -123,8 +123,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       console.error("Error getting active tab:", err);
     }
     
-    // Open checkin page in a new tab
-    chrome.tabs.create({ url: chrome.runtime.getURL("src/html/checkin.html") });
+    // Open timer-end page in a new tab
+    chrome.tabs.create({ url: chrome.runtime.getURL("src/html/timer-end.html") });
     
     // Update badge immediately
     updateBadge();
@@ -144,7 +144,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 // Handle notification click
 chrome.notifications.onClicked.addListener((id) => {
   if (id !== NOTIF_ID) return;
-  chrome.tabs.create({ url: chrome.runtime.getURL("src/html/checkin.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("src/html/timer-end.html") });
 });
 
 // Handle messages from checkin page
