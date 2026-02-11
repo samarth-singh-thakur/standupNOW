@@ -462,6 +462,26 @@
       gap: 10px;
       justify-content: flex-end;
     }
+    
+    /* David Goggins Quote Styles */
+    #gogginsQuoteToggle:hover {
+      color: #999 !important;
+    }
+    
+    #gogginsQuoteText {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
@@ -469,8 +489,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">🚀 StandupNow</div>
-        <div class="sidebar-subtitle" id="entriesCount">What did you ship?</div>
+        <div class="sidebar-title">StandupNow</div>
+        <div class="sidebar-subtitle" id="entriesCount">Quick checkin</div>
       </div>
       
       <div class="search-box">
@@ -480,15 +500,37 @@
       <div style="padding: 10px; border-bottom: 1px solid #333;">
         <select id="filterSelect" style="width: 100%; padding: 8px; background: #1a1a1a; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 12px; margin-bottom: 8px;">
           <option value="all">All Entries</option>
-          <option value="today">Today</option>
+          <option value="today" selected>Today</option>
           <option value="yesterday">Yesterday</option>
           <option value="week">This Week</option>
-          <option value="custom">Custom Date...</option>
+          <option value="custom">Custom Date Range...</option>
         </select>
-        <input type="date" id="customDate" style="width: 100%; padding: 8px; background: #1a1a1a; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 12px; display: none;">
+        <div id="dateRangeContainer" style="display: none;">
+          <label style="color: #999; font-size: 11px; margin-bottom: 4px; display: block;">From:</label>
+          <input type="date" id="startDate" style="width: 100%; padding: 8px; background: #1a1a1a; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 12px; margin-bottom: 8px; color-scheme: dark;">
+          <label style="color: #999; font-size: 11px; margin-bottom: 4px; display: block;">To:</label>
+          <input type="date" id="endDate" style="width: 100%; padding: 8px; background: #1a1a1a; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 12px; margin-bottom: 8px; color-scheme: dark;">
+        </div>
         <button id="replayDayBtn" style="width: 100%; padding: 10px; background: #FFD700; color: #000; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.3s;">
           ⏯️ Replay Day
         </button>
+      </div>
+      
+      <!-- Heat Map Calendar -->
+      <div style="padding: 15px; border-bottom: 1px solid #333;">
+        <div style="color: #FFD700; font-size: 12px; font-weight: 700; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">📊 Activity Heat Map</div>
+        <div id="heatMapCalendar" style="background: #0f0f0f; border: 2px solid #2a2a2a; border-radius: 8px; padding: 10px; overflow-x: auto;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 10px; color: #666;">
+          <span>Less</span>
+          <div style="display: flex; gap: 3px;">
+            <div style="width: 12px; height: 12px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 2px;"></div>
+            <div style="width: 12px; height: 12px; background: #3d5a00; border: 1px solid #2a2a2a; border-radius: 2px;"></div>
+            <div style="width: 12px; height: 12px; background: #6b9900; border: 1px solid #2a2a2a; border-radius: 2px;"></div>
+            <div style="width: 12px; height: 12px; background: #99d700; border: 1px solid #2a2a2a; border-radius: 2px;"></div>
+            <div style="width: 12px; height: 12px; background: #FFD700; border: 1px solid #2a2a2a; border-radius: 2px;"></div>
+          </div>
+          <span>More</span>
+        </div>
       </div>
       
       <div class="entries-list" id="entriesList">
@@ -503,11 +545,20 @@
     <!-- Main Content -->
     <div class="main-content">
       <div class="main-header">
-        <div class="main-title" id="mainTitle">What did you ship?</div>
+        <div class="main-title" id="mainTitle">Quick checkin</div>
         <div class="header-actions">
+          <button class="btn btn-secondary" id="settingsIconFullView" style="background: transparent; color: #FFD700; border: 2px solid #FFD700; padding: 10px 15px;" title="Settings">⚙️</button>
           <button class="btn btn-primary" id="saveBtn">💾 Save</button>
           <button class="btn btn-secondary" id="newEntryBtn">➕ New Entry</button>
         </div>
+      </div>
+      
+      <!-- David Goggins Quote Section -->
+      <div style="padding: 12px 30px; background: #0a0a0a; border-bottom: 1px solid #2a2a2a;">
+        <div id="gogginsQuoteToggle" style="font-size: 11px; color: #666; cursor: pointer; text-align: center; user-select: none; transition: color 0.3s;">
+          Click to show a David Goggins quote
+        </div>
+        <div id="gogginsQuoteText" style="display: none; font-size: 13px; color: #FFD700; text-align: center; margin-top: 8px; font-style: italic; line-height: 1.6; font-weight: 500; padding: 0 20px;"></div>
       </div>
       
       <div class="editor-container" id="editorContainer">
@@ -523,7 +574,7 @@
     <div id="timelineOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; overflow-y: auto; transition: opacity 0.3s ease;">
       <div style="max-width: 1200px; margin: 0 auto; padding: 40px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-          <h2 style="color: #FFD700; font-size: 28px; margin: 0;">📅 Day Replay</h2>
+          <h2 id="timelineTitle" style="color: #FFD700; font-size: 28px; margin: 0;">📅 Day Replay</h2>
           <button id="closeTimeline" style="background: transparent; border: 2px solid #FFD700; color: #FFD700; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">✕ Close</button>
         </div>
         <div id="timelineContent"></div>
@@ -543,6 +594,52 @@
     </div>
   </div>
   
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModalFullView">
+    <div class="modal-content" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="modal-title" style="margin-bottom: 0;">⚙️ Settings</div>
+        <button id="closeSettingsFullView" style="background: transparent; border: none; color: #FFD700; font-size: 24px; cursor: pointer; padding: 0; line-height: 1; transition: all 0.2s;">✕</button>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #FFD700; margin-bottom: 6px;">Check-in Frequency</label>
+        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">How often should you be reminded?</div>
+        <select id="frequencySelectFullView" style="width: 100%; padding: 10px; background: #0f0f0f; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 13px; cursor: pointer;">
+          <option value="15">Every 15 minutes</option>
+          <option value="30">Every 30 minutes</option>
+          <option value="45">Every 45 minutes</option>
+          <option value="60" selected>Every hour</option>
+          <option value="90">Every 90 minutes</option>
+          <option value="120">Every 2 hours</option>
+          <option value="custom">Custom...</option>
+        </select>
+        <div id="customFrequencyContainerFullView" style="display: none; margin-top: 10px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="number" id="customFrequencyFullView" style="flex: 1; padding: 10px; background: #0f0f0f; color: #e0e0e0; border: 2px solid #2a2a2a; border-radius: 6px; font-size: 13px;" min="1" max="1440" placeholder="Minutes">
+            <button id="applyCustomFrequencyFullView" class="btn btn-primary" style="padding: 10px 20px; flex-shrink: 0;">Apply</button>
+          </div>
+          <div style="font-size: 11px; color: #888; margin-top: 4px;">Enter 1-1440 minutes (1 min to 24 hours)</div>
+        </div>
+      </div>
+      
+      <div>
+        <label style="display: block; font-size: 14px; font-weight: 600; color: #FFD700; margin-bottom: 6px;">Snooze Notifications</label>
+        <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Pause notifications temporarily (auto-disables after 3 hours)</div>
+        <div style="background: #0f0f0f; border: 2px solid #2a2a2a; border-radius: 6px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div id="snoozeStatusFullView" style="font-size: 13px; font-weight: 600; color: #999; margin-bottom: 2px;">Snooze Off</div>
+            <div id="snoozeTimerFullView" style="font-size: 11px; color: #666;"></div>
+          </div>
+          <div id="snoozeToggleFullView" style="position: relative; width: 50px; height: 26px; background: #ccc; border-radius: 13px; cursor: pointer; transition: background 0.3s;">
+            <div style="position: absolute; width: 22px; height: 22px; border-radius: 50%; background: white; top: 2px; left: 2px; transition: transform 0.3s;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../js/quotes.js"></script>
   <script src="../js/fullview.js"></script>
 </body>
 </html>

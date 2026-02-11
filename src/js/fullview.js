@@ -2,8 +2,57 @@
 let currentEntryIndex = null;
 let allEntries = [];
 let filteredEntries = [];
-let currentFilter = 'all';
-let customDateValue = null;
+let currentFilter = 'today';
+let startDateValue = null;
+let endDateValue = null;
+// David Goggins Quote state (quotes loaded from quotes.js)
+let currentQuoteIndex = -1;
+let isQuoteVisible = false;
+
+// Get random quote (different from current)
+function getRandomQuote() {
+  let newIndex;
+  do {
+    newIndex = Math.floor(Math.random() * davidGogginsQuotes.length);
+  } while (newIndex === currentQuoteIndex && davidGogginsQuotes.length > 1);
+  currentQuoteIndex = newIndex;
+  return davidGogginsQuotes[currentQuoteIndex];
+}
+
+// Toggle quote display
+function toggleGogginsQuote() {
+  const quoteText = document.getElementById('gogginsQuoteText');
+  const quoteToggle = document.getElementById('gogginsQuoteToggle');
+  
+  if (!isQuoteVisible) {
+    // Show quote
+    const quote = getRandomQuote();
+    quoteText.textContent = `"${quote}"`;
+    quoteText.style.display = 'block';
+    quoteToggle.textContent = 'Click to show a David Goggins quote';
+    isQuoteVisible = true;
+  } else {
+    // Show next quote
+    const quote = getRandomQuote();
+    quoteText.textContent = `"${quote}"`;
+  }
+}
+
+// Reset quote state when page loads
+function resetQuoteState() {
+  isQuoteVisible = false;
+  currentQuoteIndex = -1;
+  const quoteText = document.getElementById('gogginsQuoteText');
+  const quoteToggle = document.getElementById('gogginsQuoteToggle');
+  if (quoteText) {
+    quoteText.style.display = 'none';
+    quoteText.textContent = '';
+  }
+  if (quoteToggle) {
+    quoteToggle.textContent = 'Click to show a David Goggins quote';
+  }
+}
+
 
 // Format date and time for display
 function formatDateTime(isoString) {
@@ -43,6 +92,7 @@ async function loadEntries() {
   applyFilter();
   renderEntriesList();
   updateEntriesCount();
+  generateHeatMap();
 }
 
 // Apply current filter
@@ -74,13 +124,28 @@ function applyFilter() {
       });
       break;
     case 'custom':
-      if (customDateValue) {
-        const customDate = new Date(customDateValue);
-        const nextDay = new Date(customDate);
-        nextDay.setDate(nextDay.getDate() + 1);
+      if (startDateValue && endDateValue) {
+        const startDate = new Date(startDateValue);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(endDateValue);
+        endDate.setHours(23, 59, 59, 999);
         filteredEntries = allEntries.filter(entry => {
           const entryDate = new Date(entry.time);
-          return entryDate >= customDate && entryDate < nextDay;
+          return entryDate >= startDate && entryDate <= endDate;
+        });
+      } else if (startDateValue) {
+        const startDate = new Date(startDateValue);
+        startDate.setHours(0, 0, 0, 0);
+        filteredEntries = allEntries.filter(entry => {
+          const entryDate = new Date(entry.time);
+          return entryDate >= startDate;
+        });
+      } else if (endDateValue) {
+        const endDate = new Date(endDateValue);
+        endDate.setHours(23, 59, 59, 999);
+        filteredEntries = allEntries.filter(entry => {
+          const entryDate = new Date(entry.time);
+          return entryDate <= endDate;
         });
       } else {
         filteredEntries = [...allEntries];
@@ -493,26 +558,188 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Generate heat map calendar
+function generateHeatMap() {
+  const heatMapContainer = document.getElementById('heatMapCalendar');
+  if (!heatMapContainer) return;
+  
+  // Calculate date range (last 12 weeks)
+  const today = new Date();
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - (12 * 7));
+  
+  // Count entries per day
+  const entryCounts = {};
+  allEntries.forEach(entry => {
+    const date = new Date(entry.time);
+    const dateKey = date.toISOString().split('T')[0];
+    entryCounts[dateKey] = (entryCounts[dateKey] || 0) + 1;
+  });
+  
+  // Find max count for color scaling
+  const maxCount = Math.max(...Object.values(entryCounts), 1);
+  
+  // Generate calendar grid
+  const weeks = [];
+  let currentDate = new Date(startDate);
+  currentDate.setDate(currentDate.getDate() - currentDate.getDay()); // Start from Sunday
+  
+  for (let week = 0; week < 12; week++) {
+    const days = [];
+    for (let day = 0; day < 7; day++) {
+      const dateKey = currentDate.toISOString().split('T')[0];
+      const count = entryCounts[dateKey] || 0;
+      const intensity = count === 0 ? 0 : Math.ceil((count / maxCount) * 4);
+      
+      days.push({
+        date: new Date(currentDate),
+        dateKey: dateKey,
+        count: count,
+        intensity: intensity
+      });
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    weeks.push(days);
+  }
+  
+  // Render heat map
+  const colors = ['#1a1a1a', '#3d5a00', '#6b9900', '#99d700', '#FFD700'];
+  
+  let html = '<div style="display: flex; gap: 3px;">';
+  
+  weeks.forEach(week => {
+    html += '<div style="display: flex; flex-direction: column; gap: 3px;">';
+    week.forEach(day => {
+      const color = colors[day.intensity];
+      const dateStr = day.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const title = `${dateStr}: ${day.count} ${day.count === 1 ? 'entry' : 'entries'}`;
+      
+      html += `<div
+        class="heat-map-cell"
+        data-date="${day.dateKey}"
+        data-count="${day.count}"
+        style="
+          width: 12px;
+          height: 12px;
+          background: ${color};
+          border: 1px solid #2a2a2a;
+          border-radius: 2px;
+          cursor: pointer;
+          transition: all 0.2s;
+        "
+        title="${title}"
+      ></div>`;
+    });
+    html += '</div>';
+  });
+  
+  html += '</div>';
+  heatMapContainer.innerHTML = html;
+  
+  // Add click handlers to heat map cells
+  document.querySelectorAll('.heat-map-cell').forEach(cell => {
+    cell.addEventListener('mouseenter', function() {
+      this.style.transform = 'scale(1.5)';
+      this.style.zIndex = '10';
+      this.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.6)';
+    });
+    
+    cell.addEventListener('mouseleave', function() {
+      this.style.transform = 'scale(1)';
+      this.style.zIndex = '1';
+      this.style.boxShadow = 'none';
+    });
+    
+    cell.addEventListener('click', function() {
+      const date = this.dataset.date;
+      const count = parseInt(this.dataset.count);
+      
+      if (count > 0) {
+        // Set filter to custom and select this date
+        document.getElementById('filterSelect').value = 'custom';
+        document.getElementById('startDate').value = date;
+        document.getElementById('endDate').value = date;
+        document.getElementById('dateRangeContainer').style.display = 'block';
+        
+        currentFilter = 'custom';
+        startDateValue = date;
+        endDateValue = date;
+        applyFilter();
+        renderEntriesList();
+      }
+    });
+  });
+}
+
+// Update replay button text based on filter
+function updateReplayButtonText() {
+  const replayBtn = document.getElementById('replayDayBtn');
+  
+  switch(currentFilter) {
+    case 'today':
+      replayBtn.textContent = '⏯️ Replay Today';
+      break;
+    case 'yesterday':
+      replayBtn.textContent = '⏯️ Replay Yesterday';
+      break;
+    case 'week':
+      replayBtn.textContent = '⏯️ Replay This Week';
+      break;
+    case 'custom':
+      if (startDateValue && endDateValue) {
+        if (startDateValue === endDateValue) {
+          const date = new Date(startDateValue);
+          replayBtn.textContent = `⏯️ Replay ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        } else {
+          replayBtn.textContent = '⏯️ Replay Date Range';
+        }
+      } else if (startDateValue) {
+        const date = new Date(startDateValue);
+        replayBtn.textContent = `⏯️ Replay from ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      } else if (endDateValue) {
+        const date = new Date(endDateValue);
+        replayBtn.textContent = `⏯️ Replay until ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      } else {
+        replayBtn.textContent = '⏯️ Replay Day';
+      }
+      break;
+    default:
+      replayBtn.textContent = '⏯️ Replay All';
+  }
+}
+
 // Filter change handler
 document.getElementById('filterSelect').onchange = function() {
   currentFilter = this.value;
-  const customDateInput = document.getElementById('customDate');
+  const dateRangeContainer = document.getElementById('dateRangeContainer');
   
   if (currentFilter === 'custom') {
-    customDateInput.style.display = 'block';
-    customDateInput.focus();
+    dateRangeContainer.style.display = 'block';
+    document.getElementById('startDate').focus();
   } else {
-    customDateInput.style.display = 'none';
+    dateRangeContainer.style.display = 'none';
+    startDateValue = null;
+    endDateValue = null;
     applyFilter();
     renderEntriesList();
   }
+  updateReplayButtonText();
 };
 
-// Custom date change handler
-document.getElementById('customDate').onchange = function() {
-  customDateValue = this.value;
+// Date range change handlers
+document.getElementById('startDate').onchange = function() {
+  startDateValue = this.value;
   applyFilter();
   renderEntriesList();
+  updateReplayButtonText();
+};
+
+document.getElementById('endDate').onchange = function() {
+  endDateValue = this.value;
+  applyFilter();
+  renderEntriesList();
+  updateReplayButtonText();
 };
 
 // Replay Day button
@@ -545,11 +772,46 @@ function showTimelineReplay() {
     new Date(a.time) - new Date(b.time)
   );
   
+  // Determine the title based on current filter
+  let replayTitle = '📅 Day Replay';
+  if (currentFilter === 'today') {
+    replayTitle = '📅 Today\'s Replay';
+  } else if (currentFilter === 'yesterday') {
+    replayTitle = '📅 Yesterday\'s Replay';
+  } else if (currentFilter === 'week') {
+    replayTitle = '📅 This Week\'s Replay';
+  } else if (currentFilter === 'custom') {
+    if (startDateValue && endDateValue) {
+      if (startDateValue === endDateValue) {
+        const date = new Date(startDateValue);
+        replayTitle = `📅 ${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} Replay`;
+      } else {
+        const start = new Date(startDateValue);
+        const end = new Date(endDateValue);
+        replayTitle = `📅 ${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} Replay`;
+      }
+    } else if (startDateValue) {
+      const date = new Date(startDateValue);
+      replayTitle = `📅 From ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} Replay`;
+    } else if (endDateValue) {
+      const date = new Date(endDateValue);
+      replayTitle = `📅 Until ${date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} Replay`;
+    }
+  } else {
+    replayTitle = '📅 All Entries Replay';
+  }
+  
   // Show overlay with fade-in
   const overlay = document.getElementById('timelineOverlay');
   overlay.style.display = 'block';
   overlay.style.opacity = '0';
   setTimeout(() => overlay.style.opacity = '1', 10);
+  
+  // Update the title in the overlay header
+  const titleElement = document.getElementById('timelineTitle');
+  if (titleElement) {
+    titleElement.textContent = replayTitle;
+  }
   
   // Build timeline
   const timelineContent = document.getElementById('timelineContent');
@@ -786,7 +1048,136 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+
+// Settings modal handlers for full view
+document.getElementById('settingsIconFullView').onclick = function() {
+  const modal = document.getElementById('settingsModalFullView');
+  modal.classList.add('active');
+  loadSettingsIntoFullViewModal();
+};
+
+document.getElementById('closeSettingsFullView').onclick = function() {
+  document.getElementById('settingsModalFullView').classList.remove('active');
+};
+
+// Close modal when clicking outside
+document.getElementById('settingsModalFullView').onclick = function(e) {
+  if (e.target.id === 'settingsModalFullView') {
+    this.classList.remove('active');
+  }
+};
+
+// Load settings into full view modal
+async function loadSettingsIntoFullViewModal() {
+  const data = await chrome.storage.local.get(['frequency', 'snoozeUntil']);
+  
+  // Set frequency
+  const frequency = data.frequency || 60;
+  const select = document.getElementById('frequencySelectFullView');
+  const standardValues = ['15', '30', '45', '60', '90', '120'];
+  
+  if (standardValues.includes(frequency.toString())) {
+    select.value = frequency.toString();
+  } else {
+    select.value = 'custom';
+    document.getElementById('customFrequencyContainerFullView').style.display = 'block';
+    document.getElementById('customFrequencyFullView').value = frequency;
+  }
+  
+  // Set snooze status
+  updateSnoozeDisplayFullView(data.snoozeUntil);
+}
+
+// Update snooze display in full view modal
+function updateSnoozeDisplayFullView(snoozeUntil) {
+  const toggle = document.getElementById('snoozeToggleFullView');
+  const status = document.getElementById('snoozeStatusFullView');
+  const timer = document.getElementById('snoozeTimerFullView');
+  
+  if (snoozeUntil && Date.now() < snoozeUntil) {
+    toggle.style.background = '#ff9800';
+    toggle.querySelector('div').style.transform = 'translateX(24px)';
+    status.style.color = '#ff9800';
+    status.textContent = 'Snooze Active';
+    
+    const remaining = snoozeUntil - Date.now();
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    timer.textContent = `${hours}h ${minutes}m remaining`;
+  } else {
+    toggle.style.background = '#ccc';
+    toggle.querySelector('div').style.transform = 'translateX(0)';
+    status.style.color = '#999';
+    status.textContent = 'Snooze Off';
+    timer.textContent = '';
+  }
+}
+
+// Frequency change handler for full view modal
+document.getElementById('frequencySelectFullView').onchange = function() {
+  const value = this.value;
+  
+  if (value === 'custom') {
+    document.getElementById('customFrequencyContainerFullView').style.display = 'block';
+    document.getElementById('customFrequencyFullView').focus();
+  } else {
+    document.getElementById('customFrequencyContainerFullView').style.display = 'none';
+    const minutes = parseInt(value);
+    chrome.storage.local.set({ frequency: minutes });
+    chrome.runtime.sendMessage({ action: "resetTimer" });
+    showNotification(`✓ Frequency updated to ${minutes} minutes`);
+  }
+};
+
+// Handle custom frequency in full view modal
+document.getElementById('applyCustomFrequencyFullView').onclick = function() {
+  const customValue = parseInt(document.getElementById('customFrequencyFullView').value);
+  
+  if (!customValue || customValue < 1 || customValue > 1440) {
+    showNotification('⚠️ Please enter a value between 1 and 1440 minutes');
+    return;
+  }
+  
+  chrome.storage.local.set({ frequency: customValue });
+  chrome.runtime.sendMessage({ action: "resetTimer" });
+  showNotification(`✓ Custom frequency set to ${customValue} minutes`);
+};
+
+// Allow Enter key to apply custom frequency in full view modal
+document.getElementById('customFrequencyFullView').onkeypress = function(e) {
+  if (e.key === 'Enter') {
+    document.getElementById('applyCustomFrequencyFullView').click();
+  }
+};
+
+// Snooze toggle handler for full view modal
+document.getElementById('snoozeToggleFullView').onclick = async function() {
+  const data = await chrome.storage.local.get('snoozeUntil');
+  
+  if (data.snoozeUntil && Date.now() < data.snoozeUntil) {
+    // Turn off snooze
+    await chrome.storage.local.remove('snoozeUntil');
+    showNotification('⏰ Snooze disabled');
+  } else {
+    // Turn on snooze for 3 hours
+    const snoozeUntil = Date.now() + (3 * 60 * 60 * 1000);
+    await chrome.storage.local.set({ snoozeUntil });
+    showNotification('😴 Snoozed for 3 hours');
+  }
+  
+  // Update display
+  const updatedData = await chrome.storage.local.get('snoozeUntil');
+  updateSnoozeDisplayFullView(updatedData.snoozeUntil);
+};
+
+// David Goggins Quote Toggle Handler
+document.getElementById('gogginsQuoteToggle').onclick = function() {
+  toggleGogginsQuote();
+};
+
 // Initialize
 loadEntries();
+updateReplayButtonText();
+resetQuoteState();
 
 // Made with Bob

@@ -124,7 +124,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
     
     // Open checkin page in a new tab
-    chrome.tabs.create({ url: chrome.runtime.getURL("checkin.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("src/html/checkin.html") });
     
     // Update badge immediately
     updateBadge();
@@ -144,7 +144,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 // Handle notification click
 chrome.notifications.onClicked.addListener((id) => {
   if (id !== NOTIF_ID) return;
-  chrome.tabs.create({ url: chrome.runtime.getURL("checkin.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("src/html/checkin.html") });
 });
 
 // Handle messages from checkin page

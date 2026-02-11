@@ -1,14 +1,35 @@
-// Motivational quotes
-const motivationalQuotes = [
-  '"Small wins are the building blocks of larger success." — Karl Weick',
-  '"What gets measured gets improved." — Peter Drucker',
-  '"You do not rise to the level of your goals. You fall to the level of your systems." — James Clear',
-  '"Self-observation is the first step toward self-control." — Behavioral principle',
-  '"Awareness precedes change." — Daniel Siegel',
-  '"We are what we repeatedly do." — Aristotle',
-  '"Motivation is what gets you started. Habit is what keeps you going." — Jim Rohn',
-  '"The chains of habit are too weak to be felt until they are too strong to be broken." — Samuel Johnson'
-];
+// David Goggins Quote state (quotes loaded from quotes.js)
+// Motivational quotes also loaded from quotes.js
+let currentGogginsQuoteIndex = -1;
+let isGogginsQuoteVisible = false;
+
+// Get random Goggins quote (different from current)
+function getRandomGogginsQuote() {
+  let newIndex;
+  do {
+    newIndex = Math.floor(Math.random() * davidGogginsQuotes.length);
+  } while (newIndex === currentGogginsQuoteIndex && davidGogginsQuotes.length > 1);
+  currentGogginsQuoteIndex = newIndex;
+  return davidGogginsQuotes[currentGogginsQuoteIndex];
+}
+
+// Toggle Goggins quote display
+function toggleGogginsQuote() {
+  const quoteText = document.getElementById('gogginsQuoteText');
+  const quoteToggle = document.getElementById('gogginsQuoteToggle');
+  
+  if (!isGogginsQuoteVisible) {
+    // Show quote
+    const quote = getRandomGogginsQuote();
+    quoteText.textContent = `"${quote}"`;
+    quoteText.style.display = 'block';
+    isGogginsQuoteVisible = true;
+  } else {
+    // Show next quote
+    const quote = getRandomGogginsQuote();
+    quoteText.textContent = `"${quote}"`;
+  }
+}
 
 // Get a random quote
 function getRandomQuote() {
@@ -64,6 +85,34 @@ function showToast(message, icon = '⏰') {
   setTimeout(() => {
     toast.remove();
   }, 3000);
+}
+
+// Update current time and date
+function updateCurrentTime() {
+  const now = new Date();
+  
+  // Format time as HH:MM AM/PM
+  const timeOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  };
+  const timeString = now.toLocaleString('en-US', timeOptions);
+  
+  // Format date as "Mon DD, YYYY"
+  const dateOptions = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  };
+  const dateString = now.toLocaleString('en-US', dateOptions);
+  
+  const timeElement = document.getElementById("currentTime");
+  const dateElement = document.getElementById("currentDate");
+  
+  if (timeElement) timeElement.textContent = timeString;
+  if (dateElement) dateElement.textContent = dateString;
 }
 
 // Update countdown timer
@@ -193,20 +242,71 @@ async function toggleSnooze() {
   updateCountdown();
 }
 
-// Display all entries
+// Current filter and search state
+let currentFilter = 'today';
+let currentSearchTerm = '';
+
+// Filter entries by date
+function filterEntriesByDate(entries, filter) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  switch (filter) {
+    case 'today':
+      return entries.filter(entry => {
+        const entryDate = new Date(entry.time);
+        return entryDate >= today;
+      });
+    case 'yesterday':
+      return entries.filter(entry => {
+        const entryDate = new Date(entry.time);
+        return entryDate >= yesterday && entryDate < today;
+      });
+    case 'all':
+    default:
+      return entries;
+  }
+}
+
+// Filter entries by search term
+function filterEntriesBySearch(entries, searchTerm) {
+  if (!searchTerm) return entries;
+  
+  const term = searchTerm.toLowerCase();
+  return entries.filter(entry =>
+    entry.note.toLowerCase().includes(term) ||
+    formatDateTime(entry.time).toLowerCase().includes(term)
+  );
+}
+
+// Display all entries with filters
 async function displayEntries() {
   const data = await chrome.storage.local.get("entries");
-  const entries = data.entries || [];
+  let entries = data.entries || [];
   const entriesDiv = document.getElementById("entries");
   const entryCount = document.getElementById("entryCount");
+  
+  // Apply filters
+  entries = filterEntriesByDate(entries, currentFilter);
+  entries = filterEntriesBySearch(entries, currentSearchTerm);
   
   entryCount.textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
   
   if (entries.length === 0) {
+    const emptyMessage = currentSearchTerm
+      ? `No entries found for "${currentSearchTerm}"`
+      : currentFilter === 'today'
+      ? 'No check-ins today yet.'
+      : currentFilter === 'yesterday'
+      ? 'No check-ins yesterday.'
+      : 'No check-ins yet.<br>Start tracking your productivity!';
+    
     entriesDiv.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">📝</div>
-        <div class="empty-state-text">No check-ins yet.<br>Start tracking your productivity!</div>
+        <div class="empty-state-text">${emptyMessage}</div>
       </div>
     `;
     return;
@@ -288,6 +388,57 @@ async function copyTodayEntries() {
   }
 }
 
+// Copy today's entries formatted for bob
+async function copyBobEntries() {
+  const data = await chrome.storage.local.get("entries");
+  const entries = data.entries || [];
+  
+  // Filter entries from today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const todayEntries = entries.filter(entry => {
+    const entryDate = new Date(entry.time);
+    entryDate.setHours(0, 0, 0, 0);
+    return entryDate.getTime() === today.getTime();
+  });
+  
+  if (todayEntries.length === 0) {
+    showStatus("No entries from today to copy", true);
+    return;
+  }
+  
+  // Format entries for bob
+  const formattedEntries = todayEntries.map(entry =>
+    `${formatDateTimeForCopy(entry.time)}\n${entry.note}`
+  ).join('\n\n');
+  
+  const bobCommand = `bob -p "Based on the following hourly work log:
+
+${formattedEntries}
+
+Analyze:
+- What moved the needle?
+- Where did I lose focus?
+- What patterns do you see?
+- What should I prioritize"`;
+  
+  try {
+    await navigator.clipboard.writeText(bobCommand);
+    const btn = document.getElementById('copyBobBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '🤖 Copy to bob';
+      btn.classList.remove('copied');
+    }, 2000);
+    showStatus(`✓ Copied bob command with ${todayEntries.length} ${todayEntries.length === 1 ? 'entry' : 'entries'}`);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+    showStatus("Failed to copy bob command", true);
+  }
+}
+
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -314,6 +465,9 @@ function updateQuote() {
     quoteElement.textContent = getRandomQuote();
   }
 }
+
+// Change quote every hour
+setInterval(updateQuote, 60 * 60 * 1000); // 60 minutes * 60 seconds * 1000 milliseconds
 
 // Return to last active tab
 async function returnToLastTab() {
@@ -386,11 +540,19 @@ function autoSaveDraft() {
   }, 500); // Save after 500ms of no typing
 }
 
+// Toggle clear button visibility
+function toggleClearButton() {
+  const note = document.getElementById("note").value.trim();
+  const clearBtn = document.getElementById("deleteDraft");
+  clearBtn.style.display = note ? 'block' : 'none';
+}
+
 // Load draft
 async function loadDraft() {
   const data = await chrome.storage.local.get('draft');
   if (data.draft) {
     document.getElementById("note").value = data.draft;
+    toggleClearButton(); // Show clear button if draft exists
     showStatus("📝 Draft restored", false);
   }
 }
@@ -399,47 +561,98 @@ async function loadDraft() {
 async function deleteDraft() {
   await chrome.storage.local.remove('draft');
   document.getElementById("note").value = "";
+  toggleClearButton(); // Hide clear button after clearing
   showStatus("🗑️ Draft deleted");
 }
 
-// Toggle settings visibility
-document.getElementById('toggleSettings').onclick = function() {
-  const content = document.getElementById('settingsContent');
-  const button = document.getElementById('toggleSettings');
-  
-  if (content.classList.contains('active')) {
-    content.classList.remove('active');
-    button.textContent = 'Show';
-  } else {
-    content.classList.add('active');
-    button.textContent = 'Hide';
+// Settings modal handlers
+document.getElementById('settingsIcon').onclick = function() {
+  const modal = document.getElementById('settingsModal');
+  modal.style.display = 'flex';
+  // Sync settings from storage
+  loadSettingsIntoModal();
+};
+
+document.getElementById('closeSettings').onclick = function() {
+  document.getElementById('settingsModal').style.display = 'none';
+};
+
+// Close modal when clicking outside
+document.getElementById('settingsModal').onclick = function(e) {
+  if (e.target.id === 'settingsModal') {
+    this.style.display = 'none';
   }
 };
 
-// Frequency change handler
-document.getElementById('frequencySelect').onchange = function() {
+// Load settings into modal
+async function loadSettingsIntoModal() {
+  const data = await chrome.storage.local.get(['frequency', 'snoozeUntil']);
+  
+  // Set frequency
+  const frequency = data.frequency || 60;
+  const select = document.getElementById('frequencySelectModal');
+  const standardValues = ['15', '30', '45', '60', '90', '120'];
+  
+  if (standardValues.includes(frequency.toString())) {
+    select.value = frequency.toString();
+  } else {
+    select.value = 'custom';
+    document.getElementById('customFrequencyContainerModal').style.display = 'block';
+    document.getElementById('customFrequencyModal').value = frequency;
+  }
+  
+  // Set snooze status
+  updateSnoozeDisplayModal(data.snoozeUntil);
+}
+
+// Update snooze display in modal
+function updateSnoozeDisplayModal(snoozeUntil) {
+  const toggle = document.getElementById('snoozeToggleModal');
+  const status = document.getElementById('snoozeStatusModal');
+  const timer = document.getElementById('snoozeTimerModal');
+  
+  if (snoozeUntil && Date.now() < snoozeUntil) {
+    toggle.classList.add('active');
+    status.classList.remove('inactive');
+    status.classList.add('active');
+    status.textContent = 'Snooze Active';
+    
+    const remaining = snoozeUntil - Date.now();
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    timer.textContent = `${hours}h ${minutes}m remaining`;
+  } else {
+    toggle.classList.remove('active');
+    status.classList.add('inactive');
+    status.classList.remove('active');
+    status.textContent = 'Snooze Off';
+    timer.textContent = '';
+  }
+}
+// Frequency change handler for modal
+document.getElementById('frequencySelectModal').onchange = function() {
   const value = this.value;
   
   if (value === 'custom') {
     // Show custom input
-    document.getElementById('customFrequencyContainer').style.display = 'block';
-    document.getElementById('customFrequency').focus();
+    document.getElementById('customFrequencyContainerModal').style.display = 'block';
+    document.getElementById('customFrequencyModal').focus();
   } else {
     // Hide custom input and apply preset
-    document.getElementById('customFrequencyContainer').style.display = 'none';
+    document.getElementById('customFrequencyContainerModal').style.display = 'none';
     const minutes = parseInt(value);
     saveFrequency(minutes);
-    showStatus(`✓ Frequency updated to ${minutes} minutes`);
+    showToast(`✓ Frequency updated to ${minutes} minutes`, '⚙️');
   }
 };
 
-// Handle custom frequency
-function applyCustomFrequency() {
-  const customValue = parseInt(document.getElementById('customFrequency').value);
-  const btn = document.getElementById('applyCustomFrequency');
+// Handle custom frequency in modal
+function applyCustomFrequencyModal() {
+  const customValue = parseInt(document.getElementById('customFrequencyModal').value);
+  const btn = document.getElementById('applyCustomFrequencyModal');
   
   if (!customValue || customValue < 1 || customValue > 1440) {
-    showStatus("Please enter a value between 1 and 1440 minutes", true);
+    showToast("Please enter a value between 1 and 1440 minutes", '⚠️');
     return;
   }
   
@@ -448,50 +661,140 @@ function applyCustomFrequency() {
   setTimeout(() => btn.classList.remove('btn-click-animation'), 300);
   
   saveFrequency(customValue);
-  showStatus(`✓ Custom frequency set to ${customValue} minutes`);
-  
-  // Keep the custom input visible with the applied value
-  // This makes it clear what's currently set and allows easy modification
+  showToast(`✓ Custom frequency set to ${customValue} minutes`, '⚙️');
 }
 
-// Custom frequency apply button
-document.getElementById('applyCustomFrequency').onclick = applyCustomFrequency;
+// Custom frequency apply button in modal
+document.getElementById('applyCustomFrequencyModal').onclick = applyCustomFrequencyModal;
+
+// Allow Enter key to apply custom frequency in modal
+document.getElementById('customFrequencyModal').onkeypress = function(e) {
+  if (e.key === 'Enter') {
+    applyCustomFrequencyModal();
+  }
+};
+
+// Snooze toggle handler for modal
+document.getElementById('snoozeToggleModal').onclick = async function() {
+  await toggleSnooze();
+  // Update modal display
+  const data = await chrome.storage.local.get('snoozeUntil');
+  updateSnoozeDisplayModal(data.snoozeUntil);
+};
+
+
 
 // Copy today's entries button
 document.getElementById('copyTodayBtn').onclick = copyTodayEntries;
 
-// Allow Enter key to apply custom frequency
-document.getElementById('customFrequency').onkeypress = function(e) {
-  if (e.key === 'Enter') {
-    applyCustomFrequency();
-  }
-};
-
-// Snooze toggle handler
-document.getElementById('snoozeToggle').onclick = toggleSnooze;
+// Copy to bob button
+document.getElementById('copyBobBtn').onclick = copyBobEntries;
 
 // Open full view in new tab
 document.getElementById('openFullView').onclick = function() {
-  chrome.tabs.create({ url: chrome.runtime.getURL("fullview.html") });
+  chrome.tabs.create({ url: chrome.runtime.getURL("src/html/fullview.html") });
 };
+
+// Update copy button text based on filter
+function updateCopyButtonText() {
+  const copyBtn = document.getElementById('copyTodayBtn');
+  if (!copyBtn) return;
+  
+  switch (currentFilter) {
+    case 'today':
+      copyBtn.textContent = '📋 Copy Today\'s Entries';
+      break;
+    case 'yesterday':
+      copyBtn.textContent = '📋 Copy Yesterday\'s Entries';
+      break;
+    case 'all':
+      copyBtn.textContent = '📋 Copy All Entries';
+      break;
+  }
+}
+
+// Filter button handlers
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    // Remove active class from all buttons
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // Add active class to clicked button
+    this.classList.add('active');
+    // Update filter and refresh display
+    currentFilter = this.dataset.filter;
+    updateCopyButtonText();
+    displayEntries();
+  });
+});
+
+// Search box handler
+document.getElementById('searchBox').addEventListener('input', function(e) {
+  currentSearchTerm = e.target.value.trim();
+  displayEntries();
+});
 
 // Event listeners
 document.getElementById("save").onclick = saveCheckin;
 document.getElementById("skip").onclick = skipCheckin;
 document.getElementById("deleteDraft").onclick = deleteDraft;
 
-// Add auto-save on input
-document.getElementById("note").addEventListener('input', autoSaveDraft);
+// David Goggins Quote Toggle Handler
+document.getElementById('gogginsQuoteToggle').onclick = function() {
+  toggleGogginsQuote();
+};
+
+// Add auto-save on input and toggle clear button
+document.getElementById("note").addEventListener('input', function() {
+  autoSaveDraft();
+  toggleClearButton();
+});
+
+// Add keyboard shortcut: Ctrl+Enter or Cmd+Enter to save
+document.getElementById("note").addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    saveCheckin();
+  }
+});
+
+// Enhanced focus management
+function focusTextarea() {
+  const textarea = document.getElementById("note");
+  textarea.focus();
+  // Move cursor to end of text if there's a draft
+  const length = textarea.value.length;
+  textarea.setSelectionRange(length, length);
+  
+  // Stop the pulsing animation after user starts typing
+  const inputSection = document.querySelector('.input-section');
+  textarea.addEventListener('input', function stopPulse() {
+    inputSection.style.animation = 'none';
+    textarea.removeEventListener('input', stopPulse);
+  }, { once: true });
+}
 
 // Initialize
 loadSettings();
 displayEntries();
 updateCountdown();
 updateSnoozeDisplay();
+updateCurrentTime(); // Initialize current time
+updateCopyButtonText(); // Set initial button text
 loadDraft(); // Load any saved draft
 
-// Update countdown and snooze display every second
+// Focus textarea after a short delay to ensure page is fully loaded
+setTimeout(focusTextarea, 100);
+
+// Re-focus textarea when clicking anywhere in the input section
+document.querySelector('.input-section').addEventListener('click', function(e) {
+  if (e.target.tagName !== 'BUTTON') {
+    focusTextarea();
+  }
+});
+
+// Update countdown, snooze display, and current time every second
 setInterval(() => {
   updateCountdown();
   updateSnoozeDisplay();
+  updateCurrentTime();
 }, 1000);
