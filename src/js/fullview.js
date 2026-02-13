@@ -228,6 +228,22 @@ function loadEntry(index) {
   document.getElementById('deleteBtn').onclick = showDeleteModal;
   document.getElementById('copyBtn').onclick = copyEntry;
   
+  // Add input listener to toggle update button visibility with animation
+  const textarea = document.getElementById('entryTextarea');
+  const updateBtn = document.getElementById('updateBtn');
+  
+  textarea.addEventListener('input', function() {
+    if (textarea.value.trim().length > 0) {
+      if (updateBtn.style.display === 'none') {
+        updateBtn.style.display = 'inline-block';
+        updateBtn.classList.add('fade-in');
+        setTimeout(() => updateBtn.classList.remove('fade-in'), 300);
+      }
+    } else {
+      updateBtn.style.display = 'none';
+    }
+  });
+  
   // View mode toggle
   const editModeBtn = document.getElementById('editModeBtn');
   const previewModeBtn = document.getElementById('previewModeBtn');
@@ -286,7 +302,7 @@ code block
 [link](url)" autofocus></textarea>
     <div class="markdown-preview" id="markdownPreview" style="display: none; padding: 20px; background: #0f0f0f; border: 2px solid #2a2a2a; border-radius: 12px; min-height: 400px; color: #e0e0e0; line-height: 1.8; overflow-y: auto;"></div>
     <div class="action-buttons">
-      <button class="btn btn-primary" id="saveNewBtn">💾 Save Entry</button>
+      <button class="btn btn-primary" id="saveNewBtn" style="display: none;">💾 Save Entry</button>
       <button class="btn btn-danger" id="clearDraftBtn">🗑️ Clear Draft</button>
     </div>
   `;
@@ -302,8 +318,30 @@ code block
   document.getElementById('saveNewBtn').onclick = saveNewEntry;
   document.getElementById('clearDraftBtn').onclick = clearFullViewDraft;
   
-  // Add auto-save on input
-  document.getElementById('entryTextarea').addEventListener('input', autoSaveFullViewDraft);
+  // Add auto-save on input and toggle save button visibility
+  const textarea = document.getElementById('entryTextarea');
+  const saveBtn = document.getElementById('saveNewBtn');
+  
+  textarea.addEventListener('input', function() {
+    autoSaveFullViewDraft();
+    // Show/hide save button based on content with animation
+    if (textarea.value.trim().length > 0) {
+      if (saveBtn.style.display === 'none') {
+        saveBtn.style.display = 'inline-block';
+        saveBtn.classList.add('fade-in');
+        setTimeout(() => saveBtn.classList.remove('fade-in'), 300);
+      }
+    } else {
+      saveBtn.style.display = 'none';
+    }
+  });
+  
+  // Initial check for save button visibility with animation
+  if (textarea.value.trim().length > 0) {
+    saveBtn.style.display = 'inline-block';
+    saveBtn.classList.add('fade-in');
+    setTimeout(() => saveBtn.classList.remove('fade-in'), 300);
+  }
   
   // View mode toggle
   const editModeBtn = document.getElementById('editModeBtn');

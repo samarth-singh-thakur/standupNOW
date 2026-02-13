@@ -322,6 +322,34 @@ async function toggleSnooze() {
   updateCountdown();
 }
 
+// Auto-save draft for popup
+let popupDraftTimeout;
+function autoSavePopupDraft() {
+  clearTimeout(popupDraftTimeout);
+  popupDraftTimeout = setTimeout(async () => {
+    const note = noteTextarea.value.trim();
+    if (note) {
+      await chrome.storage.local.set({ popupDraft: note });
+    } else {
+      await chrome.storage.local.remove('popupDraft');
+    }
+  }, 500);
+}
+
+// Load draft for popup
+async function loadPopupDraft() {
+  const data = await chrome.storage.local.get('popupDraft');
+  if (data.popupDraft) {
+    noteTextarea.value = data.popupDraft;
+    // Show save button if draft has content with animation
+    if (data.popupDraft.trim().length > 0) {
+      saveButton.style.display = 'inline-block';
+      saveButton.classList.add('fade-in');
+      setTimeout(() => saveButton.classList.remove('fade-in'), 300);
+    }
+  }
+}
+
 // Save check-in
 async function saveCheckin() {
   const note = document.getElementById("note").value.trim();
@@ -336,7 +364,13 @@ async function saveCheckin() {
   entries.unshift(entry);
   await chrome.storage.local.set({ entries });
 
-  document.getElementById("note").value = "";
+  noteTextarea.value = "";
+  
+  // Clear draft after saving
+  await chrome.storage.local.remove('popupDraft');
+  
+  // Hide save button after clearing
+  saveButton.style.display = 'none';
   
   // Reset timer
   chrome.runtime.sendMessage({ action: "resetTimer" });
@@ -368,7 +402,32 @@ document.getElementById('searchBox').addEventListener('input', function(e) {
 });
 
 // Event listeners
-document.getElementById("save").onclick = saveCheckin;
+const saveButton = document.getElementById("save");
+const noteTextarea = document.getElementById("note");
+
+saveButton.onclick = saveCheckin;
+
+// Hide save button initially if textarea is empty
+if (noteTextarea.value.trim().length === 0) {
+  saveButton.style.display = 'none';
+}
+
+// Toggle save button visibility and auto-save draft
+noteTextarea.addEventListener('input', function() {
+  autoSavePopupDraft();
+  
+  if (noteTextarea.value.trim().length > 0) {
+    if (saveButton.style.display === 'none') {
+      saveButton.style.display = 'inline-block';
+      saveButton.classList.add('fade-in');
+      // Remove animation class after it completes
+      setTimeout(() => saveButton.classList.remove('fade-in'), 300);
+    }
+  } else {
+    saveButton.style.display = 'none';
+  }
+});
+
 document.getElementById("copyTodayBtn").onclick = copyTodayEntries;
 document.getElementById("openFullView").onclick = function() {
   chrome.tabs.create({ url: chrome.runtime.getURL("src/html/fullview.html") });
@@ -379,7 +438,7 @@ document.getElementById("settingsIcon").onclick = function() {
 document.getElementById("headerSnoozeBtn").onclick = toggleSnooze;
 
 // Add keyboard shortcut: Ctrl+Enter or Cmd+Enter to save
-document.getElementById("note").addEventListener('keydown', function(e) {
+noteTextarea.addEventListener('keydown', function(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     saveCheckin();
@@ -396,6 +455,7 @@ async function updateDemoModeBanner() {
 }
 
 // Initialize
+loadPopupDraft(); // Load any saved draft
 displayEntries();
 updateCountdown();
 updateSnoozeDisplay();

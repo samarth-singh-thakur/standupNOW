@@ -581,8 +581,14 @@ function toggleClearButton() {
 async function loadDraft() {
   const data = await chrome.storage.local.get('draft');
   if (data.draft) {
-    document.getElementById("note").value = data.draft;
+    noteTextarea.value = data.draft;
     toggleClearButton(); // Show clear button if draft exists
+    // Show save button if draft has content with animation
+    if (data.draft.trim().length > 0) {
+      saveButton.style.display = 'inline-block';
+      saveButton.classList.add('fade-in');
+      setTimeout(() => saveButton.classList.remove('fade-in'), 300);
+    }
     showStatus("📝 Draft restored", false);
   }
 }
@@ -590,8 +596,9 @@ async function loadDraft() {
 // Delete draft
 async function deleteDraft() {
   await chrome.storage.local.remove('draft');
-  document.getElementById("note").value = "";
+  noteTextarea.value = "";
   toggleClearButton(); // Hide clear button after clearing
+  saveButton.style.display = 'none'; // Hide save button after clearing
   showStatus("🗑️ Draft deleted");
 }
 
@@ -841,23 +848,43 @@ document.getElementById('searchBox').addEventListener('input', function(e) {
 });
 
 // Event listeners
-document.getElementById("save").onclick = saveCheckin;
+const saveButton = document.getElementById("save");
+const noteTextarea = document.getElementById("note");
+
+saveButton.onclick = saveCheckin;
 document.getElementById("skip").onclick = skipCheckin;
 document.getElementById("deleteDraft").onclick = deleteDraft;
+
+// Hide save button initially if textarea is empty
+if (noteTextarea.value.trim().length === 0) {
+  saveButton.style.display = 'none';
+}
 
 // David Goggins Quote Toggle Handler
 document.getElementById('gogginsQuoteToggle').onclick = function() {
   toggleGogginsQuote();
 };
 
-// Add auto-save on input and toggle clear button
-document.getElementById("note").addEventListener('input', function() {
+// Add auto-save on input and toggle clear button and save button
+noteTextarea.addEventListener('input', function() {
   autoSaveDraft();
   toggleClearButton();
+  
+  // Toggle save button visibility with animation
+  if (noteTextarea.value.trim().length > 0) {
+    if (saveButton.style.display === 'none') {
+      saveButton.style.display = 'inline-block';
+      saveButton.classList.add('fade-in');
+      // Remove animation class after it completes
+      setTimeout(() => saveButton.classList.remove('fade-in'), 300);
+    }
+  } else {
+    saveButton.style.display = 'none';
+  }
 });
 
 // Add keyboard shortcut: Ctrl+Enter or Cmd+Enter to save
-document.getElementById("note").addEventListener('keydown', function(e) {
+noteTextarea.addEventListener('keydown', function(e) {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
     saveCheckin();
