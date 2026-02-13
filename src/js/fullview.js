@@ -2,7 +2,7 @@
 let currentEntryIndex = null;
 let allEntries = [];
 let filteredEntries = [];
-let currentFilter = 'today';
+let currentFilter = 'all';
 let startDateValue = null;
 let endDateValue = null;
 // David Goggins Quote state (quotes loaded from quotes.js)
@@ -229,7 +229,6 @@ function loadEntry(index) {
   document.getElementById('copyBtn').onclick = copyEntry;
   
   // Add input listener to toggle update button visibility with animation
-  const textarea = document.getElementById('entryTextarea');
   const updateBtn = document.getElementById('updateBtn');
   
   textarea.addEventListener('input', function() {
@@ -247,7 +246,6 @@ function loadEntry(index) {
   // View mode toggle
   const editModeBtn = document.getElementById('editModeBtn');
   const previewModeBtn = document.getElementById('previewModeBtn');
-  const textarea = document.getElementById('entryTextarea');
   const preview = document.getElementById('markdownPreview');
   
   editModeBtn.onclick = () => {
@@ -319,7 +317,6 @@ code block
   document.getElementById('clearDraftBtn').onclick = clearFullViewDraft;
   
   // Add auto-save on input and toggle save button visibility
-  const textarea = document.getElementById('entryTextarea');
   const saveBtn = document.getElementById('saveNewBtn');
   
   textarea.addEventListener('input', function() {
@@ -346,7 +343,6 @@ code block
   // View mode toggle
   const editModeBtn = document.getElementById('editModeBtn');
   const previewModeBtn = document.getElementById('previewModeBtn');
-  const textarea = document.getElementById('entryTextarea');
   const preview = document.getElementById('markdownPreview');
   
   editModeBtn.onclick = () => {
@@ -384,6 +380,15 @@ async function saveNewEntry() {
   if (!note) {
     alert('Please enter some content before saving.');
     return;
+  }
+  
+  // Check if demo mode is active
+  if (typeof DemoMode !== 'undefined') {
+    const isDemoMode = await DemoMode.isDemoModeEnabled();
+    if (isDemoMode) {
+      showNotification('⚠️ Cannot save in demo mode! Disable demo mode first.', 'error');
+      return;
+    }
   }
   
   const entry = { time: new Date().toISOString(), note };
@@ -445,6 +450,15 @@ async function updateEntry() {
   if (!note) {
     alert('Please enter some content before updating.');
     return;
+  }
+  
+  // Check if demo mode is active
+  if (typeof DemoMode !== 'undefined') {
+    const isDemoMode = await DemoMode.isDemoModeEnabled();
+    if (isDemoMode) {
+      showNotification('⚠️ Cannot update in demo mode! Disable demo mode first.', 'error');
+      return;
+    }
   }
   
   allEntries[currentEntryIndex].note = note;
@@ -552,10 +566,13 @@ function showPlaceholder() {
 // Search entries
 function searchEntries(query) {
   if (!query.trim()) {
-    filteredEntries = [...allEntries];
+    // When search is cleared, reapply the current filter
+    applyFilter();
   } else {
     const lowerQuery = query.toLowerCase();
-    filteredEntries = allEntries.filter(entry => 
+    // Apply search on top of the current filter
+    applyFilter(); // First apply the date filter
+    filteredEntries = filteredEntries.filter(entry =>
       entry.note.toLowerCase().includes(lowerQuery) ||
       formatDateTime(entry.time).toLowerCase().includes(lowerQuery)
     );

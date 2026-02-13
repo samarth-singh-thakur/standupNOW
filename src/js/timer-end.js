@@ -518,6 +518,15 @@ async function saveCheckin() {
     return;
   }
 
+  // Check if demo mode is active
+  if (typeof DemoMode !== 'undefined') {
+    const isDemoMode = await DemoMode.isDemoModeEnabled();
+    if (isDemoMode) {
+      showStatus("⚠️ Cannot save in demo mode! Disable demo mode first.", true);
+      return;
+    }
+  }
+
   const entry = { time: new Date().toISOString(), note };
   const data = await chrome.storage.local.get("entries");
   const entries = data.entries || [];
