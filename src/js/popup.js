@@ -341,11 +341,15 @@ async function loadPopupDraft() {
   const data = await chrome.storage.local.get('popupDraft');
   if (data.popupDraft) {
     noteTextarea.value = data.popupDraft;
-    // Show save button if draft has content with animation
+    // Show save button and delete draft button if draft has content with animation
     if (data.popupDraft.trim().length > 0) {
       saveButton.style.display = 'inline-block';
       saveButton.classList.add('fade-in');
       setTimeout(() => saveButton.classList.remove('fade-in'), 300);
+      
+      deleteDraftButton.style.display = 'block';
+      deleteDraftButton.classList.add('fade-in');
+      setTimeout(() => deleteDraftButton.classList.remove('fade-in'), 300);
     }
   }
 }
@@ -369,8 +373,9 @@ async function saveCheckin() {
   // Clear draft after saving
   await chrome.storage.local.remove('popupDraft');
   
-  // Hide save button after clearing
+  // Hide buttons after clearing
   saveButton.style.display = 'none';
+  deleteDraftButton.style.display = 'none';
   
   // Reset timer
   chrome.runtime.sendMessage({ action: "resetTimer" });
@@ -401,20 +406,47 @@ document.getElementById('searchBox').addEventListener('input', function(e) {
   displayEntries();
 });
 
+// Delete draft function
+async function deletePopupDraft() {
+  await chrome.storage.local.remove('popupDraft');
+  noteTextarea.value = "";
+  saveButton.style.display = 'none';
+  deleteDraftButton.style.display = 'none';
+  showStatus("🗑️ Draft deleted");
+}
+
+// Toggle delete draft button visibility
+function toggleDeleteDraftButton() {
+  const note = noteTextarea.value.trim();
+  if (note) {
+    if (deleteDraftButton.style.display === 'none') {
+      deleteDraftButton.style.display = 'block';
+      deleteDraftButton.classList.add('fade-in');
+      setTimeout(() => deleteDraftButton.classList.remove('fade-in'), 300);
+    }
+  } else {
+    deleteDraftButton.style.display = 'none';
+  }
+}
+
 // Event listeners
 const saveButton = document.getElementById("save");
 const noteTextarea = document.getElementById("note");
+const deleteDraftButton = document.getElementById("deleteDraft");
 
 saveButton.onclick = saveCheckin;
+deleteDraftButton.onclick = deletePopupDraft;
 
-// Hide save button initially if textarea is empty
+// Hide buttons initially if textarea is empty
 if (noteTextarea.value.trim().length === 0) {
   saveButton.style.display = 'none';
+  deleteDraftButton.style.display = 'none';
 }
 
-// Toggle save button visibility and auto-save draft
+// Toggle save button and delete draft button visibility, auto-save draft
 noteTextarea.addEventListener('input', function() {
   autoSavePopupDraft();
+  toggleDeleteDraftButton();
   
   if (noteTextarea.value.trim().length > 0) {
     if (saveButton.style.display === 'none') {
