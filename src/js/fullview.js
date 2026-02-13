@@ -1279,8 +1279,9 @@ document.getElementById('demoModeToggleFullView').onclick = async function() {
       showNotification('✓ Demo mode enabled - Showing demo data');
     }
     
-    // Refresh the entries display
-    loadEntries();
+    // Refresh the entries display and update banner
+    await loadEntries();
+    updateDemoModeBanner();
   } catch (error) {
     console.error('Error toggling demo mode:', error);
     showNotification('⚠️ Failed to toggle demo mode');
