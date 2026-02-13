@@ -805,7 +805,15 @@ function showTimelineReplay() {
   const overlay = document.getElementById('timelineOverlay');
   overlay.style.display = 'block';
   overlay.style.opacity = '0';
+  overlay.scrollTop = 0; // Reset scroll to top
   setTimeout(() => overlay.style.opacity = '1', 10);
+  
+  // Close on background click
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.style.display = 'none';
+    }
+  };
   
   // Update the title in the overlay header
   const titleElement = document.getElementById('timelineTitle');
@@ -872,61 +880,125 @@ function showTimelineReplay() {
   }
   
   // Add items with enhanced animation
-  sortedEntries.forEach((entry, index) => {
-    const item = document.createElement('div');
-    item.style.cssText = `
-      position: relative;
-      margin-bottom: 30px;
-      opacity: 0;
-      transform: translateX(-50px) scale(0.8) rotateY(-15deg);
-      transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-      z-index: 2;
-    `;
-    
-    const time = new Date(entry.time);
-    const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    
-    item.innerHTML = `
-      <div class="timeline-dot" style="position: absolute; left: -28px; width: 16px; height: 16px; background: #FFD700; border-radius: 50%; border: 4px solid #1a1a1a; box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); animation: pulse 2s infinite;"></div>
-      <div class="timeline-card markdown-preview" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); border: 2px solid #FFD700; border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3); position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;">
-        <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%); pointer-events: none;"></div>
-        <div style="color: #FFD700; font-weight: 700; font-size: 18px; margin-bottom: 10px; position: relative; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
-          🕐 ${timeStr}
-        </div>
-        <div style="color: #e0e0e0; line-height: 1.6; position: relative;">
-          ${renderMarkdown(entry.note)}
-        </div>
-      </div>
-    `;
-    
-    timelineItems.appendChild(item);
-    
-    // Animate in sequence with particles
-    setTimeout(() => {
-      item.style.opacity = '1';
-      item.style.transform = 'translateX(0) scale(1) rotateY(0)';
-      
-      // Create particle burst
-      const rect = item.getBoundingClientRect();
-      createParticles(rect.left + 20, rect.top + rect.height / 2);
-      animateParticles();
-      
-      // Grow timeline line with glow effect
-      const itemHeight = item.offsetHeight + 30;
-      const currentHeight = parseInt(timelineLine.style.height) || 0;
-      timelineLine.style.height = (currentHeight + itemHeight) + 'px';
-      
-      // Add hover effect to card
-      const card = item.querySelector('.timeline-card');
-      card.onmouseenter = () => {
-        card.style.transform = 'translateY(-5px) scale(1.02)';
-        card.style.boxShadow = '0 12px 48px rgba(255, 215, 0, 0.5)';
+  // Group entries by day
+  const entriesByDay = {};
+  sortedEntries.forEach(entry => {
+    const d = new Date(entry.time);
+    const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if (!entriesByDay[dateKey]) {
+      entriesByDay[dateKey] = {
+        date: d,
+        entries: []
       };
-      card.onmouseleave = () => {
-        card.style.transform = 'translateY(0) scale(1)';
-        card.style.boxShadow = '0 8px 32px rgba(255, 215, 0, 0.3)';
-      };
-    }, index * 400 + 300);
+    }
+    entriesByDay[dateKey].entries.push(entry);
+  });
+  
+  const hasMultipleDays = Object.keys(entriesByDay).length > 1;
+  let animationDelay = 300;
+  
+  Object.keys(entriesByDay).forEach((dateKey, dayIndex) => {
+    const dayData = entriesByDay[dateKey];
+    
+    // Add day header if multiple days
+    if (hasMultipleDays) {
+      const dayHeader = document.createElement('div');
+      dayHeader.style.cssText = `
+        position: relative;
+        margin: ${dayIndex > 0 ? '50px' : '0'} 0 25px 0;
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: all 0.5s ease;
+        z-index: 2;
+      `;
+      
+      const dateStr = dayData.date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: dayData.date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+      });
+      
+      dayHeader.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.15) 100%); border: 2px solid #FFD700; border-radius: 12px; padding: 15px 20px; display: inline-block; box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);">
+          <div style="color: #FFD700; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
+            📅 ${dateStr}
+          </div>
+          <div style="color: #FFA500; font-size: 13px; margin-top: 4px; font-weight: 600;">
+            ${dayData.entries.length} check-in${dayData.entries.length > 1 ? 's' : ''}
+          </div>
+        </div>
+      `;
+      
+      timelineItems.appendChild(dayHeader);
+      
+      setTimeout(() => {
+        dayHeader.style.opacity = '1';
+        dayHeader.style.transform = 'translateY(0)';
+      }, animationDelay);
+      
+      animationDelay += 200;
+    }
+    
+    // Add entries for this day
+    dayData.entries.forEach((entry, entryIndex) => {
+      const item = document.createElement('div');
+      item.style.cssText = `
+        position: relative;
+        margin-bottom: 30px;
+        opacity: 0;
+        transform: translateX(-50px) scale(0.8) rotateY(-15deg);
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 2;
+      `;
+      
+      const time = new Date(entry.time);
+      const timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      
+      item.innerHTML = `
+        <div class="timeline-dot" style="position: absolute; left: -28px; width: 16px; height: 16px; background: #FFD700; border-radius: 50%; border: 4px solid #1a1a1a; box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); animation: pulse 2s infinite;"></div>
+        <div class="timeline-card markdown-preview" style="background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%); border: 2px solid #FFD700; border-radius: 12px; padding: 20px; box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3); position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+          <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%); pointer-events: none;"></div>
+          <div style="color: #FFD700; font-weight: 700; font-size: 18px; margin-bottom: 10px; position: relative; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);">
+            🕐 ${timeStr}
+          </div>
+          <div style="color: #e0e0e0; line-height: 1.6; position: relative;">
+            ${renderMarkdown(entry.note)}
+          </div>
+        </div>
+      `;
+      
+      timelineItems.appendChild(item);
+      
+      // Animate in sequence with particles
+      setTimeout(() => {
+        item.style.opacity = '1';
+        item.style.transform = 'translateX(0) scale(1) rotateY(0)';
+        
+        // Create particle burst
+        const rect = item.getBoundingClientRect();
+        createParticles(rect.left + 20, rect.top + rect.height / 2);
+        animateParticles();
+        
+        // Grow timeline line with glow effect
+        const itemHeight = item.offsetHeight + 30;
+        const currentHeight = parseInt(timelineLine.style.height) || 0;
+        timelineLine.style.height = (currentHeight + itemHeight) + 'px';
+        
+        // Add hover effect to card
+        const card = item.querySelector('.timeline-card');
+        card.onmouseenter = () => {
+          card.style.transform = 'translateY(-5px) scale(1.02)';
+          card.style.boxShadow = '0 12px 48px rgba(255, 215, 0, 0.5)';
+        };
+        card.onmouseleave = () => {
+          card.style.transform = 'translateY(0) scale(1)';
+          card.style.boxShadow = '0 8px 32px rgba(255, 215, 0, 0.3)';
+        };
+      }, animationDelay);
+      
+      animationDelay += 400;
+    });
   });
   
   // Add enhanced summary at the end
