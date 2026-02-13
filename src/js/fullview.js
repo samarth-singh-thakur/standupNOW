@@ -1086,6 +1086,9 @@ async function loadSettingsIntoFullViewModal() {
   
   // Set snooze status
   updateSnoozeDisplayFullView(data.snoozeUntil);
+  
+  // Set demo mode status
+  await updateDemoModeDisplayFullView();
 }
 
 // Update snooze display in full view modal
@@ -1170,14 +1173,94 @@ document.getElementById('snoozeToggleFullView').onclick = async function() {
   updateSnoozeDisplayFullView(updatedData.snoozeUntil);
 };
 
+// Demo mode toggle handler for full view modal
+document.getElementById('demoModeToggleFullView').onclick = async function() {
+  const toggle = this;
+  const status = document.getElementById('demoModeStatusFullView');
+  const info = document.getElementById('demoModeInfoFullView');
+  
+  // Disable toggle during operation
+  toggle.style.pointerEvents = 'none';
+  
+  try {
+    const isEnabled = await DemoMode.isDemoModeEnabled();
+    
+    if (isEnabled) {
+      // Disable demo mode
+      await DemoMode.disableDemoMode();
+      toggle.style.background = '#ccc';
+      toggle.querySelector('div').style.transform = 'translateX(0)';
+      status.style.color = '#999';
+      status.textContent = 'Demo Mode Off';
+      info.textContent = 'Your data is safe and backed up';
+      info.style.color = '#666';
+      showNotification('✓ Demo mode disabled - Real data restored');
+    } else {
+      // Enable demo mode
+      await DemoMode.enableDemoMode();
+      toggle.style.background = '#ff9800';
+      toggle.querySelector('div').style.transform = 'translateX(24px)';
+      status.style.color = '#ff9800';
+      status.textContent = 'Demo Mode Active';
+      info.textContent = 'Showing demo data - Your real data is backed up';
+      info.style.color = '#ff9800';
+      showNotification('✓ Demo mode enabled - Showing demo data');
+    }
+    
+    // Refresh the entries display
+    loadEntries();
+  } catch (error) {
+    console.error('Error toggling demo mode:', error);
+    showNotification('⚠️ Failed to toggle demo mode');
+  } finally {
+    // Re-enable toggle
+    toggle.style.pointerEvents = 'auto';
+  }
+};
+
+// Update demo mode display in full view modal
+async function updateDemoModeDisplayFullView() {
+  const toggle = document.getElementById('demoModeToggleFullView');
+  const status = document.getElementById('demoModeStatusFullView');
+  const info = document.getElementById('demoModeInfoFullView');
+  
+  const isEnabled = await DemoMode.isDemoModeEnabled();
+  
+  if (isEnabled) {
+    toggle.style.background = '#ff9800';
+    toggle.querySelector('div').style.transform = 'translateX(24px)';
+    status.style.color = '#ff9800';
+    status.textContent = 'Demo Mode Active';
+    info.textContent = 'Showing demo data - Your real data is backed up';
+    info.style.color = '#ff9800';
+  } else {
+    toggle.style.background = '#ccc';
+    toggle.querySelector('div').style.transform = 'translateX(0)';
+    status.style.color = '#999';
+    status.textContent = 'Demo Mode Off';
+    info.textContent = 'Your data is safe and backed up';
+    info.style.color = '#666';
+  }
+}
+
 // David Goggins Quote Toggle Handler
 document.getElementById('gogginsQuoteToggle').onclick = function() {
   toggleGogginsQuote();
 };
 
+// Check and display demo mode banner
+async function updateDemoModeBanner() {
+  const banner = document.getElementById('demoModeBanner');
+  if (banner && typeof DemoMode !== 'undefined') {
+    const isEnabled = await DemoMode.isDemoModeEnabled();
+    banner.style.display = isEnabled ? 'block' : 'none';
+  }
+}
+
 // Initialize
 loadEntries();
 updateReplayButtonText();
 resetQuoteState();
+updateDemoModeBanner();
 
 // Made with Bob

@@ -747,6 +747,10 @@
     </div>
     
     <div class="main-content">
+      <div id="demoModeBanner" style="display: none; background: linear-gradient(135deg, #ff9800 0%, #ff6b00 100%); color: white; padding: 12px 20px; text-align: center; font-size: 13px; font-weight: 700; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4); animation: pulseGlow 2s ease-in-out infinite;">
+        🎭 DEMO MODE ACTIVE - Showing demo data (Your real data is safely backed up)
+      </div>
+      
       <div class="input-section">
         <label class="input-label">Quick checkin</label>
         <div style="position: relative;">
@@ -853,6 +857,18 @@ Type here and hit Save or press Ctrl+Enter..." autofocus></textarea>
           <div class="toggle-switch" id="snoozeToggleModal"></div>
         </div>
       </div>
+      
+      <div class="setting-item">
+        <label class="setting-label">🎭 Demo Mode</label>
+        <div class="setting-description">Hide your real data and show demo entries for presentations or screenshots</div>
+        <div class="snooze-container">
+          <div class="snooze-info">
+            <div class="snooze-status inactive" id="demoModeStatus">Demo Mode Off</div>
+            <div class="snooze-timer" id="demoModeInfo" style="color: #888;">Your data is safe and backed up</div>
+          </div>
+          <div class="toggle-switch" id="demoModeToggle"></div>
+        </div>
+      </div>
     </div>
   </div>
   
@@ -862,6 +878,7 @@ Type here and hit Save or press Ctrl+Enter..." autofocus></textarea>
       document.body.classList.add('popup-mode');
     }
   </script>
+  <script src="../js/demo-mode.js"></script>
   <script src="../js/quotes.js"></script>
   <script src="../js/timer-end.js"></script>
   <script>

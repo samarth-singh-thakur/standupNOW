@@ -386,6 +386,15 @@ document.getElementById("note").addEventListener('keydown', function(e) {
   }
 });
 
+// Check and display demo mode banner
+async function updateDemoModeBanner() {
+  const banner = document.getElementById('demoModeBanner');
+  if (banner && typeof DemoMode !== 'undefined') {
+    const isEnabled = await DemoMode.isDemoModeEnabled();
+    banner.style.display = isEnabled ? 'block' : 'none';
+  }
+}
+
 // Initialize
 displayEntries();
 updateCountdown();
@@ -393,6 +402,7 @@ updateSnoozeDisplay();
 updateCurrentTime();
 updateCopyButtonText();
 updateQuote();
+updateDemoModeBanner();
 
 // Update every second
 setInterval(() => {

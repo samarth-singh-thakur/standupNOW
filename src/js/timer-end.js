@@ -633,6 +633,9 @@ async function loadSettingsIntoModal() {
   
   // Set snooze status
   updateSnoozeDisplayModal(data.snoozeUntil);
+  
+  // Set demo mode status
+  await updateDemoModeDisplay();
 }
 
 // Update snooze display in modal
@@ -712,7 +715,75 @@ document.getElementById('snoozeToggleModal').onclick = async function() {
   updateSnoozeDisplayModal(data.snoozeUntil);
 };
 
+// Demo mode toggle handler for modal
+document.getElementById('demoModeToggle').onclick = async function() {
+  const toggle = this;
+  const status = document.getElementById('demoModeStatus');
+  const info = document.getElementById('demoModeInfo');
+  
+  // Disable toggle during operation
+  toggle.style.pointerEvents = 'none';
+  
+  try {
+    const isEnabled = await DemoMode.isDemoModeEnabled();
+    
+    if (isEnabled) {
+      // Disable demo mode
+      await DemoMode.disableDemoMode();
+      toggle.classList.remove('active');
+      status.classList.add('inactive');
+      status.classList.remove('active');
+      status.textContent = 'Demo Mode Off';
+      info.textContent = 'Your data is safe and backed up';
+      info.style.color = '#888';
+      showToast('✓ Demo mode disabled - Real data restored', '🎭');
+    } else {
+      // Enable demo mode
+      await DemoMode.enableDemoMode();
+      toggle.classList.add('active');
+      status.classList.remove('inactive');
+      status.classList.add('active');
+      status.textContent = 'Demo Mode Active';
+      info.textContent = 'Showing demo data - Your real data is backed up';
+      info.style.color = '#ff9800';
+      showToast('✓ Demo mode enabled - Showing demo data', '🎭');
+    }
+    
+    // Refresh the entries display
+    displayEntries();
+  } catch (error) {
+    console.error('Error toggling demo mode:', error);
+    showToast('⚠️ Failed to toggle demo mode', '❌');
+  } finally {
+    // Re-enable toggle
+    toggle.style.pointerEvents = 'auto';
+  }
+};
 
+// Update demo mode display in modal
+async function updateDemoModeDisplay() {
+  const toggle = document.getElementById('demoModeToggle');
+  const status = document.getElementById('demoModeStatus');
+  const info = document.getElementById('demoModeInfo');
+  
+  const isEnabled = await DemoMode.isDemoModeEnabled();
+  
+  if (isEnabled) {
+    toggle.classList.add('active');
+    status.classList.remove('inactive');
+    status.classList.add('active');
+    status.textContent = 'Demo Mode Active';
+    info.textContent = 'Showing demo data - Your real data is backed up';
+    info.style.color = '#ff9800';
+  } else {
+    toggle.classList.remove('active');
+    status.classList.add('inactive');
+    status.classList.remove('active');
+    status.textContent = 'Demo Mode Off';
+    info.textContent = 'Your data is safe and backed up';
+    info.style.color = '#888';
+  }
+}
 
 // Copy today's entries button
 document.getElementById('copyTodayBtn').onclick = copyTodayEntries;
@@ -809,6 +880,15 @@ function focusTextarea() {
   }, { once: true });
 }
 
+// Check and display demo mode banner
+async function updateDemoModeBanner() {
+  const banner = document.getElementById('demoModeBanner');
+  if (banner && typeof DemoMode !== 'undefined') {
+    const isEnabled = await DemoMode.isDemoModeEnabled();
+    banner.style.display = isEnabled ? 'block' : 'none';
+  }
+}
+
 // Initialize
 loadSettings();
 displayEntries();
@@ -817,6 +897,7 @@ updateSnoozeDisplay();
 updateCurrentTime(); // Initialize current time
 updateCopyButtonText(); // Set initial button text
 loadDraft(); // Load any saved draft
+updateDemoModeBanner(); // Check demo mode status
 
 // Focus textarea after a short delay to ensure page is fully loaded
 setTimeout(focusTextarea, 100);
