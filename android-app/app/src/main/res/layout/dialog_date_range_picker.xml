@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/space_lg">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select date range for filtering entries"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="@dimen/space_lg" />
+
+    <Button
+        android:id="@+id/btn_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start: Select Date"
+        android:textColor="@color/text_primary"
+        android:backgroundTint="@color/bg_dark"
+        android:layout_marginBottom="@dimen/space_md" />
+
+    <Button
+        android:id="@+id/btn_end_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="End: Select Date"
+        android:textColor="@color/text_primary"
+        android:backgroundTint="@color/bg_dark" />
+
+</LinearLayout>
+
+<!-- Made with Bob -->

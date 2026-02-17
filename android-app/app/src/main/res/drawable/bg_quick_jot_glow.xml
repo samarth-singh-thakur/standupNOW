@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Glowing gold border for quick jot area -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Outer glow -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#40FFD700" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    
+    <!-- Middle glow -->
+    <item
+        android:left="2dp"
+        android:top="2dp"
+        android:right="2dp"
+        android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#60FFD700" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+    
+    <!-- Inner glow -->
+    <item
+        android:left="4dp"
+        android:top="4dp"
+        android:right="4dp"
+        android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#80FFD700" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+    
+    <!-- Gold border -->
+    <item
+        android:left="6dp"
+        android:top="6dp"
+        android:right="6dp"
+        android:bottom="6dp">
+        <shape android:shape="rectangle">
+            <stroke
+                android:width="3dp"
+                android:color="@color/color_gold" />
+            <solid android:color="@color/bg_pure_black" />
+            <corners android:radius="10dp" />
+        </shape>
+    </item>
+    
+</layer-list>
+
+<!-- Made with Bob -->

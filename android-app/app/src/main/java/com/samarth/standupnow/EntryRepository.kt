@@ -12,10 +12,12 @@ class EntryRepository(context: Context) {
         private const val KEY_ENTRIES = "entries"
     }
     
-    // Get all active entries
+    // Get all active entries (sorted by time, newest first)
     fun getAllEntries(): List<UserItem> {
         val jsonString = prefs.getString(KEY_ENTRIES, "[]") ?: "[]"
-        return parseEntries(jsonString).filter { !it.deleted }
+        return parseEntries(jsonString)
+            .filter { !it.deleted }
+            .sortedByDescending { UserItem.parseISOTime(it.time) }
     }
     
     // Get all entries including deleted (for sync)

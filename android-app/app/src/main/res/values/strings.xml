@@ -9,6 +9,8 @@
     <string name="server_error">Failed to start server</string>
     <string name="copy_url">Copy URL</string>
     <string name="url_copied">URL copied to clipboard</string>
+    <string name="add_entry">Add Entry</string>
+    <string name="toggle_view">Toggle View</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- EntryCard Component: Individual timeline entry display -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="12dp">
+
+    <!-- Time Gap Display (between entries) -->
+    <TextView
+        android:id="@+id/time_gap_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2h 30m"
+        android:textSize="11sp"
+        android:textColor="#80FFFFFF"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:visibility="gone" />
+
+    <!-- Entry Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/entry_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/card_bg"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:strokeColor="@color/gold_accent"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <!-- Gold Accent Bar -->
+            <View
+                android:id="@+id/accent_bar"
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="@color/gold_accent"
+                android:layout_marginEnd="12dp" />
+
+            <!-- Entry Content -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- Timestamp -->
+                <TextView
+                    android:id="@+id/entry_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4:40 PM"
+                    android:textSize="13sp"
+                    android:textColor="@color/gold_accent"
+                    android:fontFamily="monospace"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Entry Text -->
+                <TextView
+                    android:id="@+id/entry_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Entry content goes here"
+                    android:textSize="15sp"
+                    android:textColor="@android:color/white"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>
+
+<!-- Made with Bob -->

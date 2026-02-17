@@ -1,46 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- HomeScreen: Main application screen with toggle between composer and list views -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_medium"
-    android:fitsSystemWindows="true"
+    android:background="@color/dark_bg"
     tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <!-- Composer View (Full Screen) - Shown by default -->
+    <LinearLayout
+        android:id="@+id/composer_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/bg_pure_black"
-        android:elevation="4dp"
-        android:fitsSystemWindows="true">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            style="@style/Widget.StandupNow.Toolbar"
+        <!-- Full-screen EntryComposer -->
+        <include
+            android:id="@+id/entry_composer_fullscreen"
+            layout="@layout/component_entry_composer"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/bg_pure_black"
-            app:titleTextColor="@color/text_primary" />
+            android:layout_height="match_parent"
+            android:layout_margin="16dp" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+    </LinearLayout>
 
-    <include layout="@layout/content_main" />
+    <!-- List View - Hidden by default -->
+    <LinearLayout
+        android:id="@+id/list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
 
+        <!-- HeaderBar Component (only visible in list view) -->
+        <include
+            android:id="@+id/header_bar"
+            layout="@layout/component_header_bar" />
+
+        <!-- Scrollable Content -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- ContentControls Component -->
+                <include
+                    android:id="@+id/content_controls"
+                    layout="@layout/component_content_controls"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <!-- EntryList Component (Timeline) -->
+                <LinearLayout
+                    android:id="@+id/entry_list_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="8dp">
+
+                    <!-- RecyclerView for Timeline Entries -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:paddingBottom="80dp"
+                        tools:listitem="@layout/component_entry_card" />
+
+                    <!-- Empty State -->
+                    <TextView
+                        android:id="@+id/empty_state_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="No entries yet. Start jotting down your thoughts!"
+                        android:textSize="16sp"
+                        android:textColor="#80FFFFFF"
+                        android:gravity="center"
+                        android:padding="32dp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
+
+    <!-- FAB - Toggles between composer and list views -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="@dimen/space_lg"
-        android:contentDescription="@string/app_name"
-        app:backgroundTint="@color/color_gold"
-        app:tint="@color/bg_pure_black"
+        android:layout_margin="24dp"
+        android:contentDescription="@string/toggle_view"
+        app:srcCompat="@android:drawable/ic_menu_view"
+        app:backgroundTint="@color/gold_accent"
+        app:tint="@color/dark_bg"
         app:elevation="6dp"
-        app:hoveredFocusedTranslationZ="8dp"
-        app:pressedTranslationZ="10dp"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:pressedTranslationZ="12dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

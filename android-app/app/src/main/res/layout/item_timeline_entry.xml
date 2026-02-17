@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Timeline entry item with time display and gap indicator outside card -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Time gap indicator (shown between cards) -->
+    <TextView
+        android:id="@+id/time_gap_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_sm"
+        android:fontFamily="monospace"
+        android:text="2h 3m"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:visibility="gone" />
+
+    <!-- Card with entry content -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/space_sm"
+        android:layout_marginTop="@dimen/space_xs"
+        android:layout_marginBottom="@dimen/space_xs"
+        android:background="@drawable/bg_card_gold_accent"
+        app:cardBackgroundColor="@color/bg_dark"
+        app:cardCornerRadius="@dimen/radius_md"
+        app:cardElevation="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/padding_card">
+
+            <!-- Gold accent indicator -->
+            <View
+                android:layout_width="@dimen/border_thick_large"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/space_md"
+                android:background="@color/color_gold" />
+
+            <!-- Content area -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- Time display -->
+                <TextView
+                    android:id="@+id/entry_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:text="4:00 PM"
+                    android:textColor="@color/color_gold"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="@dimen/space_xs" />
+
+                <!-- Entry text -->
+                <TextView
+                    android:id="@+id/entry_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:lineSpacingMultiplier="1.6"
+                    android:text="Sample Entry Text"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/font_size_body" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</LinearLayout>
+
+<!-- Made with Bob -->

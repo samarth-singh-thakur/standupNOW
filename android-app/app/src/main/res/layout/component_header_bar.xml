@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- HeaderBar Component: Minimal black header with search icon -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/header_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/transparent"
+    android:fitsSystemWindows="true">
+
+    <!-- Compact Header Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@android:color/black"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <!-- Server Status -->
+        <TextView
+            android:id="@+id/toolbar_server_url"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🌐 Server"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="monospace"
+            android:visibility="visible" />
+
+        <!-- Entries Count -->
+        <TextView
+            android:id="@+id/toolbar_entries_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginEnd="16dp" />
+
+        <!-- Search Icon Button -->
+        <ImageButton
+            android:id="@+id/search_icon_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_search"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Search"
+            android:tint="@android:color/white" />
+
+        <!-- Menu Icon Button -->
+        <ImageButton
+            android:id="@+id/menu_icon_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Menu"
+            android:tint="@android:color/white"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+    <!-- Search Bar (Initially Hidden) -->
+    <LinearLayout
+        android:id="@+id/search_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/black"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
+
+        <!-- Search Input -->
+        <EditText
+            android:id="@+id/search_input"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:hint="🔍 Search entries..."
+            android:textColorHint="#80FFFFFF"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:background="@drawable/bg_input_section"
+            android:padding="12dp"
+            android:inputType="text"
+            android:imeOptions="actionSearch" />
+
+        <!-- Filter Chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:singleSelection="true"
+                app:chipSpacingHorizontal="8dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_all"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All"
+                    android:checked="true"
+                    android:textColor="@color/gold_accent"
+                    app:chipBackgroundColor="@color/chip_background_selector" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_today"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Today"
+                    android:textColor="@color/gold_accent"
+                    app:chipBackgroundColor="@color/chip_background_selector" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_yesterday"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Yesterday"
+                    android:textColor="@color/gold_accent"
+                    app:chipBackgroundColor="@color/chip_background_selector" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_this_week"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="This Week"
+                    android:textColor="@color/gold_accent"
+                    app:chipBackgroundColor="@color/chip_background_selector" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_custom_range"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Custom"
+                    android:textColor="@color/gold_accent"
+                    app:chipBackgroundColor="@color/chip_background_selector" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+<!-- Made with Bob -->
