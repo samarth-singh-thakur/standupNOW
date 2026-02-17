@@ -1,3 +1,64 @@
 <resources>
+    <!-- Design System: Spacing Scale (multiples of 4px) -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_2xl">24dp</dimen>
+    <dimen name="space_3xl">30dp</dimen>
+    <dimen name="space_4xl">40dp</dimen>
+    
+    <!-- Design System: Padding -->
+    <dimen name="padding_button_vertical">10dp</dimen>
+    <dimen name="padding_button_horizontal">16dp</dimen>
+    <dimen name="padding_input">12dp</dimen>
+    <dimen name="padding_card">12dp</dimen>
+    <dimen name="padding_card_large">20dp</dimen>
+    <dimen name="padding_section">20dp</dimen>
+    <dimen name="padding_section_large">30dp</dimen>
+    
+    <!-- Design System: Gaps -->
+    <dimen name="gap_tight">8dp</dimen>
+    <dimen name="gap_normal">10dp</dimen>
+    <dimen name="gap_normal_large">12dp</dimen>
+    <dimen name="gap_loose">15dp</dimen>
+    <dimen name="gap_loose_large">20dp</dimen>
+    
+    <!-- Design System: Margins -->
+    <dimen name="margin_element">10dp</dimen>
+    <dimen name="margin_element_large">15dp</dimen>
+    <dimen name="margin_section">20dp</dimen>
+    <dimen name="margin_section_large">25dp</dimen>
+    
+    <!-- Design System: Border Radius -->
+    <dimen name="radius_sm">4dp</dimen>
+    <dimen name="radius_sm_large">6dp</dimen>
+    <dimen name="radius_md">8dp</dimen>
+    <dimen name="radius_lg">12dp</dimen>
+    
+    <!-- Design System: Border Width -->
+    <dimen name="border_thin">1dp</dimen>
+    <dimen name="border_medium">2dp</dimen>
+    <dimen name="border_thick">3dp</dimen>
+    <dimen name="border_thick_large">4dp</dimen>
+    
+    <!-- Design System: Typography -->
+    <dimen name="font_size_h1">24sp</dimen>
+    <dimen name="font_size_h2">20sp</dimen>
+    <dimen name="font_size_h3">18sp</dimen>
+    <dimen name="font_size_h3_small">16sp</dimen>
+    <dimen name="font_size_body">14sp</dimen>
+    <dimen name="font_size_small">13sp</dimen>
+    <dimen name="font_size_small_xs">12sp</dimen>
+    <dimen name="font_size_tiny">11sp</dimen>
+    <dimen name="font_size_tiny_xs">10sp</dimen>
+    <dimen name="font_size_button">14sp</dimen>
+    <dimen name="font_size_input">14sp</dimen>
+    <dimen name="font_size_input_large">16sp</dimen>
+    
+    <!-- Legacy -->
     <dimen name="fab_margin">16dp</dimen>
 </resources>
+
+<!-- Made with Bob -->

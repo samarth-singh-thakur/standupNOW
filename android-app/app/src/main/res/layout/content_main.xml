@@ -4,16 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_medium"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <TextView
         android:id="@+id/empty_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="monospace"
         android:text="No items yet.\nTap the + button to add one!"
         android:textAlignment="center"
-        android:textSize="16sp"
-        android:textColor="?android:attr/textColorSecondary"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/font_size_h3_small"
+        android:lineSpacingMultiplier="1.6"
+        android:paddingStart="@dimen/space_2xl"
+        android:paddingEnd="@dimen/space_2xl"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,9 +28,12 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
+        android:background="@color/bg_medium"
         android:clipToPadding="false"
+        android:padding="@dimen/space_sm"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@android:layout/simple_list_item_1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+<!-- Made with Bob -->

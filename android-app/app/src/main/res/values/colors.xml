@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Design System: Primary Palette -->
+    <color name="color_gold">#FFD700</color>
+    <color name="color_gold_hover">#FFC700</color>
+    <color name="color_gold_alpha_10">#1AFFD700</color>
+    <color name="color_gold_alpha_30">#4DFFD700</color>
+    <color name="color_gold_alpha_50">#80FFD700</color>
+    
+    <!-- Design System: Background Hierarchy -->
+    <color name="bg_pure_black">#000000</color>
+    <color name="bg_dark">#0F0F0F</color>
+    <color name="bg_medium">#1A1A1A</color>
+    <color name="bg_light">#2A2A2A</color>
+    
+    <!-- Design System: Text Colors -->
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="text_tertiary">#888888</color>
+    <color name="text_muted">#666666</color>
+    <color name="text_accent">#FFD700</color>
+    
+    <!-- Design System: Semantic Colors -->
+    <color name="color_success">#4CAF50</color>
+    <color name="color_error">#FF4444</color>
+    <color name="color_warning">#FF9800</color>
+    <color name="color_info">#4A90E2</color>
+    <color name="color_purple">#9B59B6</color>
+    
+    <!-- Legacy colors (kept for compatibility) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>
+
+<!-- Made with Bob -->

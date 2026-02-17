@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Input section background with gold glow (Design System) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_gold_alpha_10" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/color_gold_alpha_30" />
+    <corners android:radius="12dp" />
+</shape>
+
+<!-- Made with Bob -->

@@ -1,9 +1,90 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.StandupNow" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme following Design System Playbook -->
+    <style name="Base.Theme.StandupNow" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary brand color (Gold) -->
+        <item name="colorPrimary">@color/color_gold</item>
+        <item name="colorPrimaryVariant">@color/color_gold_hover</item>
+        <item name="colorOnPrimary">@color/bg_pure_black</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/color_gold</item>
+        <item name="colorSecondaryVariant">@color/color_gold_hover</item>
+        <item name="colorOnSecondary">@color/bg_pure_black</item>
+        
+        <!-- Background colors (Dark theme hierarchy) -->
+        <item name="android:colorBackground">@color/bg_medium</item>
+        <item name="colorSurface">@color/bg_dark</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Status bar and navigation bar -->
+        <item name="android:statusBarColor">@color/bg_pure_black</item>
+        <item name="android:navigationBarColor">@color/bg_pure_black</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
+        <item name="android:textColorHint">@color/text_muted</item>
+        
+        <!-- Error color -->
+        <item name="colorError">@color/color_error</item>
+        <item name="colorOnError">@color/white</item>
+        
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/bg_medium</item>
     </style>
 
     <style name="Theme.StandupNow" parent="Base.Theme.StandupNow" />
+    
+    <!-- Button styles following Design System -->
+    <style name="Widget.StandupNow.Button.Primary" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/color_gold</item>
+        <item name="android:textColor">@color/bg_pure_black</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.05</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="Widget.StandupNow.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/color_gold</item>
+        <item name="android:textColor">@color/color_gold</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.05</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <!-- Card style following Design System -->
+    <style name="Widget.StandupNow.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/bg_dark</item>
+        <item name="cardCornerRadius">@dimen/radius_md</item>
+        <item name="cardElevation">4dp</item>
+        <item name="contentPadding">@dimen/padding_card</item>
+    </style>
+    
+    <!-- Text input style following Design System -->
+    <style name="Widget.StandupNow.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/color_gold</item>
+        <item name="boxStrokeWidth">@dimen/border_medium</item>
+        <item name="hintTextColor">@color/text_muted</item>
+        <item name="android:textColorHint">@color/text_muted</item>
+        <item name="boxCornerRadiusTopStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_md</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_md</item>
+    </style>
+    
+    <!-- Toolbar style -->
+    <style name="Widget.StandupNow.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">@color/bg_pure_black</item>
+        <item name="titleTextColor">@color/text_primary</item>
+        <item name="android:elevation">4dp</item>
+    </style>
 </resources>
+
+<!-- Made with Bob -->
