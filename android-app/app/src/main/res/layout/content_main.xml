@@ -7,6 +7,141 @@
     android:background="@color/bg_medium"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+    <!-- Server Info Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/server_info_card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/space_md"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/bg_dark"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/space_md">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="🌐 Server Running"
+                    android:textColor="@color/color_gold"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_hide_server"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Hide"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:minWidth="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="@dimen/space_sm"
+                android:layout_marginBottom="@dimen/space_sm"
+                android:background="@color/text_secondary"
+                android:alpha="0.2" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_input_section"
+                android:padding="@dimen/space_md">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Address"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace" />
+
+                <TextView
+                    android:id="@+id/tv_server_address"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="192.168.1.100"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:fontFamily="monospace"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:text="Port"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:fontFamily="monospace" />
+
+                <TextView
+                    android:id="@+id/tv_server_port"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="8080"
+                    android:textColor="@color/color_gold"
+                    android:textSize="20sp"
+                    android:fontFamily="monospace"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_copy_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_md"
+                android:text="Copy URL"
+                android:textColor="@color/bg_pure_black"
+                app:backgroundTint="@color/color_gold"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Start Server Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_start_server"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/space_md"
+        android:text="Start Server"
+        android:textColor="@color/bg_pure_black"
+        android:textSize="16sp"
+        android:paddingTop="@dimen/space_md"
+        android:paddingBottom="@dimen/space_md"
+        app:backgroundTint="@color/color_gold"
+        app:cornerRadius="12dp"
+        app:icon="@android:drawable/ic_media_play"
+        app:iconTint="@color/bg_pure_black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/empty_text"
         android:layout_width="wrap_content"
@@ -22,16 +157,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/btn_start_server" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/space_sm"
         android:background="@color/bg_medium"
         android:clipToPadding="false"
         android:padding="@dimen/space_sm"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_start_server"
         tools:listitem="@android:layout/simple_list_item_1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
