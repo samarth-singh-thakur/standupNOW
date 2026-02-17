@@ -55,9 +55,15 @@ function generateDemoEntries() {
       
       const activity = DEMO_ACTIVITIES[Math.floor(Math.random() * DEMO_ACTIVITIES.length)];
       
+      const entryTime = entryDate.toISOString();
       demoEntries.push({
-        time: entryDate.toISOString(),
-        note: activity
+        id: crypto.randomUUID(),
+        time: entryTime,
+        note: activity,
+        createdAt: entryTime,
+        updatedAt: entryTime,
+        version: 1,
+        deleted: false
       });
     }
   }

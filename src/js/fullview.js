@@ -391,7 +391,16 @@ async function saveNewEntry() {
     }
   }
   
-  const entry = { time: new Date().toISOString(), note };
+  const now = new Date().toISOString();
+  const entry = {
+    id: crypto.randomUUID(),
+    time: now,
+    note: note,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+    deleted: false
+  };
   allEntries.unshift(entry);
   await chrome.storage.local.set({ entries: allEntries });
   
@@ -1384,6 +1393,16 @@ async function updateDemoModeBanner() {
     banner.style.display = isEnabled ? 'block' : 'none';
   }
 }
+
+// Initialize Sync Manager and UI
+window.syncManager.init();
+const syncUI = new SyncUI('syncButtonContainer');
+syncUI.render();
+
+// Listen for sync complete to refresh entries
+window.addEventListener('syncComplete', () => {
+  loadEntries();
+});
 
 // Initialize
 loadEntries();

@@ -36,9 +36,15 @@ async function addDemoData() {
       const entryDate = new Date(year, month, day, hour, minute, second);
       const activity = activities[Math.floor(Math.random() * activities.length)];
       
+      const entryTime = entryDate.toISOString();
       demoEntries.push({
-        time: entryDate.toISOString(),
-        note: activity
+        id: crypto.randomUUID(),
+        time: entryTime,
+        note: activity,
+        createdAt: entryTime,
+        updatedAt: entryTime,
+        version: 1,
+        deleted: false
       });
     }
   }

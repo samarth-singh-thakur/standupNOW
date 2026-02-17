@@ -100,12 +100,66 @@ function startBadgeUpdateInterval() {
 // Start badge updates when service worker starts
 startBadgeUpdateInterval();
 
+// Check if last entry was made from phone (within the last frequency period)
+async function wasLastEntryFromPhone() {
+  try {
+    const data = await chrome.storage.local.get(['syncEnabled', 'serverUrl', 'entries', 'frequency']);
+    
+    // Only check if sync is enabled
+    if (!data.syncEnabled || !data.serverUrl) {
+      return false;
+    }
+    
+    const entries = data.entries || [];
+    if (entries.length === 0) {
+      return false;
+    }
+    
+    // Get the most recent entry
+    const lastEntry = entries[0];
+    const frequency = data.frequency || 60;
+    const frequencyMs = frequency * 60 * 1000;
+    
+    // Check if the last entry was created within the current frequency period
+    const lastEntryTime = new Date(lastEntry.createdAt || lastEntry.time).getTime();
+    const now = Date.now();
+    const timeSinceLastEntry = now - lastEntryTime;
+    
+    // If entry was made within the frequency period, consider it as "from phone"
+    // (since it would have been synced from phone during auto-sync)
+    if (timeSinceLastEntry < frequencyMs) {
+      console.log("Last entry was made within frequency period:", {
+        timeSinceLastEntry: Math.floor(timeSinceLastEntry / 1000 / 60) + " minutes ago",
+        frequency: frequency + " minutes"
+      });
+      return true;
+    }
+    
+    return false;
+  } catch (err) {
+    console.error("Error checking last entry:", err);
+    return false;
+  }
+}
+
 // Handle all alarms
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === ALARM_NAME) {
     // Check if snoozed before showing notification
     if (await isSnoozed()) {
       console.log("Notification suppressed - currently snoozed");
+      return;
+    }
+    
+    // Check if sync is active and last entry was from phone
+    if (await wasLastEntryFromPhone()) {
+      console.log("Last entry was from phone - resetting timer instead of showing notification");
+      // Reset the timer without opening checkin page
+      chrome.alarms.clear(ALARM_NAME, async () => {
+        await createAlarm();
+        console.log("Timer reset due to phone entry");
+        updateBadge();
+      });
       return;
     }
 

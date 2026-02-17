@@ -512,6 +512,238 @@
     #closeTimeline:active {
       transform: scale(0.98);
     }
+    
+    /* Sync UI Styles */
+    .sync-button {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      background: transparent;
+      border: 2px solid #FFD700;
+      border-radius: 6px;
+      color: #FFD700;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .sync-status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+    
+    .sync-status-indicator.connected {
+      background: #4CAF50;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+    }
+    
+    .sync-status-indicator.disconnected {
+      background: #FF5252;
+      color: white;
+      box-shadow: 0 0 8px rgba(255, 82, 82, 0.6);
+      animation: pulseIndicator 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseIndicator {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .sync-button:hover {
+      background: rgba(255, 215, 0, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .sync-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    #syncIcon {
+      font-size: 14px;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .sync-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .sync-modal-content {
+      background: #1a1a1a;
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .sync-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .sync-modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #FFD700;
+    }
+    
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    
+    .close-modal-btn:hover {
+      color: #FFD700;
+    }
+    
+    .sync-connection-status {
+      margin: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid;
+      text-align: center;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    .sync-modal-body {
+      padding: 20px;
+    }
+    
+    .sync-input-group {
+      margin-bottom: 16px;
+    }
+    
+    .sync-input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #FFD700;
+      font-weight: 600;
+    }
+    
+    .sync-input-group input {
+      width: 100%;
+      padding: 10px;
+      background: #0f0f0f;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    
+    .sync-input-group input:focus {
+      outline: none;
+      border-color: #FFD700;
+    }
+    
+    .sync-input-group input:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .sync-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .sync-btn-primary,
+    .sync-btn-secondary {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .sync-btn-primary {
+      background: #FFD700;
+      border: none;
+      color: #000;
+    }
+    
+    .sync-btn-primary:hover {
+      background: #FFC700;
+      transform: translateY(-1px);
+    }
+    
+    .sync-btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .sync-btn-secondary {
+      background: transparent;
+      border: 2px solid #FF5252;
+      color: #FF5252;
+    }
+    
+    .sync-btn-secondary:hover {
+      background: rgba(255, 82, 82, 0.1);
+    }
+    
+    .sync-info {
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255, 215, 0, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    
+    .sync-info ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    
+    .sync-info li {
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
@@ -519,8 +751,13 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <div class="sidebar-title">StandupNow</div>
-        <div class="sidebar-subtitle" id="entriesCount">Quick checkin</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div>
+            <div class="sidebar-title">StandupNow</div>
+            <div class="sidebar-subtitle" id="entriesCount">Quick checkin</div>
+          </div>
+          <div id="syncButtonContainer"></div>
+        </div>
       </div>
       
       <div class="search-box">
@@ -692,6 +929,8 @@
     </div>
   </div>
   
+  <script src="../js/sync-manager.js"></script>
+  <script src="../js/sync-ui.js"></script>
   <script src="../js/demo-mode.js"></script>
   <script src="../js/quotes.js"></script>
   <script src="../js/fullview.js"></script>

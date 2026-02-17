@@ -318,6 +318,9 @@ async function displayEntries() {
   const entriesDiv = document.getElementById("entries");
   const entryCount = document.getElementById("entryCount");
   
+  // Filter out deleted entries (sync-compatible)
+  entries = entries.filter(e => !e.deleted);
+  
   // Apply filters
   entries = filterEntriesByDate(entries, currentFilter);
   entries = filterEntriesBySearch(entries, currentSearchTerm);
@@ -527,7 +530,18 @@ async function saveCheckin() {
     }
   }
 
-  const entry = { time: new Date().toISOString(), note };
+  // Create sync-compatible entry
+  const now = new Date().toISOString();
+  const entry = {
+    id: crypto.randomUUID(),
+    time: now,
+    note: note,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+    deleted: false
+  };
+
   const data = await chrome.storage.local.get("entries");
   const entries = data.entries || [];
   entries.unshift(entry);
@@ -801,6 +815,213 @@ async function updateDemoModeDisplay() {
   }
 }
 
+// Sync functionality
+async function updateSyncDisplay() {
+  const toggle = document.getElementById('syncToggle');
+  const status = document.getElementById('syncStatus');
+  const info = document.getElementById('syncInfo');
+  const settings = document.getElementById('syncSettings');
+  const syncNowBtn = document.getElementById('syncNowBtn');
+  
+  const data = await chrome.storage.local.get(['syncEnabled', 'serverUrl', 'lastSyncTime']);
+  
+  if (data.syncEnabled && data.serverUrl) {
+    toggle.classList.add('active');
+    status.classList.remove('inactive');
+    status.classList.add('active');
+    status.textContent = '✓ Connected';
+    
+    if (data.lastSyncTime) {
+      const lastSync = new Date(data.lastSyncTime);
+      const now = new Date();
+      const diffMinutes = Math.floor((now - lastSync) / (1000 * 60));
+      info.textContent = diffMinutes < 1 ? 'Just synced' : `Last sync: ${diffMinutes}m ago`;
+    } else {
+      info.textContent = 'Ready to sync';
+    }
+    info.style.color = '#4CAF50';
+    
+    settings.style.display = 'block';
+    syncNowBtn.style.display = 'block';
+  } else {
+    toggle.classList.remove('active');
+    status.classList.add('inactive');
+    status.classList.remove('active');
+    status.textContent = 'Not Connected';
+    info.textContent = 'Connect to start syncing';
+    info.style.color = '#888';
+    
+    settings.style.display = 'none';
+  }
+}
+
+document.getElementById('syncToggle').onclick = async function() {
+  const data = await chrome.storage.local.get(['syncEnabled', 'serverUrl']);
+  
+  if (data.syncEnabled && data.serverUrl) {
+    // Disconnect
+    await chrome.storage.local.set({ syncEnabled: false });
+    await chrome.storage.local.remove('serverUrl');
+    showToast('✓ Sync disabled', '🔄');
+  } else {
+    // Show connection form
+    const settings = document.getElementById('syncSettings');
+    settings.style.display = 'block';
+    showToast('Enter phone IP and port', '🔄');
+  }
+  
+  await updateSyncDisplay();
+};
+
+document.getElementById('connectPhoneBtn').onclick = async function() {
+  const ip = document.getElementById('phoneIP').value.trim();
+  const port = document.getElementById('phonePort').value.trim();
+  
+  if (!ip || !port) {
+    showToast('⚠️ Enter IP and port', '❌');
+    return;
+  }
+  
+  const serverUrl = `http://${ip}:${port}`;
+  
+  // Test connection
+  try {
+    const response = await fetch(`${serverUrl}/api/ping`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    if (response.ok) {
+      await chrome.storage.local.set({
+        serverUrl,
+        syncEnabled: true
+      });
+      showToast('✓ Connected to phone', '🔄');
+      await updateSyncDisplay();
+      
+      // Trigger initial sync
+      await syncWithPhone();
+    } else {
+      showToast('✗ Connection failed', '❌');
+    }
+  } catch (error) {
+    showToast('✗ Cannot reach phone', '❌');
+    console.error('Connection error:', error);
+  }
+};
+
+document.getElementById('syncNowBtn').onclick = async function() {
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Syncing...';
+  
+  const result = await syncWithPhone();
+  
+  if (result.success) {
+    showToast(`✓ Synced: ${result.pushed} sent, ${result.pulled} received`, '🔄');
+    await updateSyncDisplay();
+  } else {
+    showToast(`✗ Sync failed: ${result.error}`, '❌');
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Sync Now';
+};
+
+async function syncWithPhone() {
+  const data = await chrome.storage.local.get(['serverUrl', 'lastSyncTime', 'entries']);
+  
+  if (!data.serverUrl) {
+    console.error('Sync failed: No server URL');
+    return { success: false, error: 'Not connected' };
+  }
+  
+  try {
+    const entries = data.entries || [];
+    const lastSync = data.lastSyncTime || new Date(0).toISOString();
+    
+    // Get entries updated since last sync
+    const sinceTime = new Date(lastSync).getTime();
+    const localUpdates = entries.filter(e => {
+      const entryTime = new Date(e.updatedAt || e.time).getTime();
+      return entryTime > sinceTime;
+    });
+    
+    console.log('Syncing with phone:', {
+      serverUrl: data.serverUrl,
+      lastSync,
+      localUpdates: localUpdates.length,
+      totalEntries: entries.length
+    });
+    
+    // Send to phone
+    const requestBody = {
+      lastSync,
+      entries: localUpdates
+    };
+    
+    console.log('Sending request:', requestBody);
+    
+    const response = await fetch(`${data.serverUrl}/api/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(10000)
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Sync failed:', response.status, errorText);
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Sync response:', result);
+    
+    // Merge phone entries
+    const phoneEntries = result.entries || [];
+    const map = new Map();
+    
+    // Add local entries
+    entries.forEach(e => {
+      if (e.id) map.set(e.id, e);
+    });
+    
+    // Phone entries override (phone wins)
+    phoneEntries.forEach(e => {
+      if (e.id) map.set(e.id, e);
+    });
+    
+    const merged = Array.from(map.values())
+      .filter(e => !e.deleted)
+      .sort((a, b) => new Date(b.time) - new Date(a.time));
+    
+    console.log('Merged entries:', merged.length);
+    
+    await chrome.storage.local.set({
+      entries: merged,
+      lastSyncTime: result.serverTime || new Date().toISOString()
+    });
+    
+    // Refresh display
+    displayEntries();
+    
+    return {
+      success: true,
+      pushed: localUpdates.length,
+      pulled: phoneEntries.length
+    };
+  } catch (error) {
+    console.error('Sync error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // Copy today's entries button
 document.getElementById('copyTodayBtn').onclick = copyTodayEntries;
 
@@ -817,6 +1038,146 @@ document.getElementById('headerSnoozeBtn').onclick = async function() {
   await toggleSnooze();
   await updateSnoozeDisplay();
 };
+
+// Header sync button handler
+document.getElementById('headerSyncBtn').onclick = function() {
+  document.getElementById('syncModal').style.display = 'flex';
+  updateSyncModalDisplay();
+};
+
+// Close sync modal
+document.getElementById('closeSyncModal').onclick = function() {
+  document.getElementById('syncModal').style.display = 'none';
+};
+
+// Close modal when clicking outside
+document.getElementById('syncModal').onclick = function(e) {
+  if (e.target.id === 'syncModal') {
+    this.style.display = 'none';
+  }
+};
+
+// Update sync modal display
+async function updateSyncModalDisplay() {
+  const data = await chrome.storage.local.get(['syncEnabled', 'serverUrl', 'lastSyncTime']);
+  const statusDiv = document.getElementById('syncConnectionStatus');
+  const statusText = document.getElementById('syncStatusText');
+  const connectBtn = document.getElementById('connectPhoneBtnModal');
+  const disconnectBtn = document.getElementById('disconnectPhoneBtnModal');
+  const ipInput = document.getElementById('phoneIPModal');
+  const portInput = document.getElementById('phonePortModal');
+  
+  if (data.syncEnabled && data.serverUrl) {
+    // Connected
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = 'rgba(76, 175, 80, 0.1)';
+    statusDiv.style.borderColor = 'rgba(76, 175, 80, 0.3)';
+    statusText.style.color = '#4CAF50';
+    
+    if (data.lastSyncTime) {
+      const lastSync = new Date(data.lastSyncTime);
+      const now = new Date();
+      const diffMinutes = Math.floor((now - lastSync) / (1000 * 60));
+      statusText.textContent = `✓ Connected - Last sync: ${diffMinutes < 1 ? 'just now' : diffMinutes + 'm ago'}`;
+    } else {
+      statusText.textContent = '✓ Connected - Ready to sync';
+    }
+    
+    // Extract IP and port from serverUrl
+    const url = new URL(data.serverUrl);
+    ipInput.value = url.hostname;
+    portInput.value = url.port || '8080';
+    ipInput.disabled = true;
+    portInput.disabled = true;
+    
+    connectBtn.style.display = 'none';
+    disconnectBtn.style.display = 'block';
+  } else {
+    // Not connected
+    statusDiv.style.display = 'none';
+    ipInput.disabled = false;
+    portInput.disabled = false;
+    connectBtn.style.display = 'block';
+    disconnectBtn.style.display = 'none';
+  }
+}
+
+// Connect button handler
+document.getElementById('connectPhoneBtnModal').onclick = async function() {
+  const ip = document.getElementById('phoneIPModal').value.trim();
+  const port = document.getElementById('phonePortModal').value.trim();
+  
+  if (!ip || !port) {
+    showToast('⚠️ Enter IP and port', '❌');
+    return;
+  }
+  
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = 'Connecting...';
+  
+  const serverUrl = `http://${ip}:${port}`;
+  
+  try {
+    const response = await fetch(`${serverUrl}/api/ping`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(5000)
+    });
+    
+    if (response.ok) {
+      await chrome.storage.local.set({
+        serverUrl,
+        syncEnabled: true,
+        lastSyncTime: null // Reset to force full sync
+      });
+      showToast('✓ Connected to phone', '🔄');
+      await updateSyncModalDisplay();
+      await updateHeaderSyncButton();
+      
+      // Trigger initial sync with ALL entries
+      const result = await syncWithPhone();
+      if (result.success) {
+        showToast(`✓ Synced ${result.pushed} entries to phone`, '🔄');
+      }
+    } else {
+      showToast('✗ Connection failed', '❌');
+    }
+  } catch (error) {
+    showToast('✗ Cannot reach phone', '❌');
+    console.error('Connection error:', error);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Connect to Phone';
+  }
+};
+
+// Disconnect button handler
+document.getElementById('disconnectPhoneBtnModal').onclick = async function() {
+  await chrome.storage.local.set({ syncEnabled: false });
+  await chrome.storage.local.remove('serverUrl');
+  showToast('✓ Disconnected', '🔄');
+  await updateSyncModalDisplay();
+  await updateHeaderSyncButton();
+};
+
+// Update header sync button appearance
+async function updateHeaderSyncButton() {
+  const data = await chrome.storage.local.get(['syncEnabled', 'serverUrl']);
+  const btn = document.getElementById('headerSyncBtn');
+  const icon = document.getElementById('headerSyncIcon');
+  
+  if (data.syncEnabled && data.serverUrl) {
+    btn.style.borderColor = '#4CAF50';
+    btn.style.color = '#4CAF50';
+    btn.title = 'Phone Sync - Connected';
+    icon.textContent = '✓';
+  } else {
+    btn.style.borderColor = 'rgba(255, 215, 0, 0.5)';
+    btn.style.color = '#FFD700';
+    btn.title = 'Phone Sync - Not Connected';
+    icon.textContent = '🔄';
+  }
+}
 
 // Update copy button text based on filter
 function updateCopyButtonText() {
@@ -934,6 +1295,8 @@ updateCurrentTime(); // Initialize current time
 updateCopyButtonText(); // Set initial button text
 loadDraft(); // Load any saved draft
 updateDemoModeBanner(); // Check demo mode status
+updateSyncDisplay(); // Check sync status
+updateHeaderSyncButton(); // Update sync button appearance
 
 // Focus textarea after a short delay to ensure page is fully loaded
 setTimeout(focusTextarea, 100);

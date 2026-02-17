@@ -749,6 +749,9 @@
       <div style="position: relative; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
         <h1 style="margin: 0; flex: 1; text-align: center;">StandupNow</h1>
         <div style="display: flex; align-items: center; gap: 8px; position: absolute; right: 0; top: 0;">
+          <button id="headerSyncBtn" style="background: transparent; border: 1px solid rgba(255, 215, 0, 0.5); color: #FFD700; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 16px; transition: all 0.3s; display: flex; align-items: center;" title="Phone Sync" onmouseover="this.style.background='rgba(255, 215, 0, 0.1)'; this.style.borderColor='#FFD700'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255, 215, 0, 0.5)'; this.style.transform='scale(1)'">
+            <span id="headerSyncIcon">🔄</span>
+          </button>
           <button id="headerSnoozeBtn" style="background: transparent; border: 1px solid rgba(255, 215, 0, 0.5); color: #FFD700; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 16px; transition: all 0.3s; display: flex; align-items: center;" title="Snooze for 3 hours" onmouseover="this.style.background='rgba(255, 215, 0, 0.1)'; this.style.borderColor='#FFD700'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255, 215, 0, 0.5)'; this.style.transform='scale(1)'">
             <span id="headerSnoozeIcon">🔔</span>
           </button>
@@ -883,6 +886,71 @@ Type here and hit Save or press Ctrl+Enter..." autofocus></textarea>
           </div>
           <div class="toggle-switch" id="demoModeToggle"></div>
         </div>
+      </div>
+      
+      <div class="setting-item">
+        <label class="setting-label">🔄 Phone Sync</label>
+        <div class="setting-description">Sync entries with your Android phone over local network</div>
+        <div class="snooze-container">
+          <div class="snooze-info">
+            <div class="snooze-status inactive" id="syncStatus">Not Connected</div>
+            <div class="snooze-timer" id="syncInfo" style="color: #888;">Connect to start syncing</div>
+          </div>
+          <div class="toggle-switch" id="syncToggle"></div>
+        </div>
+        <div id="syncSettings" style="display: none; margin-top: 15px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="phoneIP" placeholder="192.168.1.100"
+                   style="flex: 2; padding: 8px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: #e0e0e0; font-size: 13px;">
+            <input type="number" id="phonePort" placeholder="8080" value="8080"
+                   style="flex: 1; padding: 8px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: #e0e0e0; font-size: 13px;">
+          </div>
+          <button id="connectPhoneBtn"
+                  style="width: 100%; padding: 10px; background: #FFD700; color: #000; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;">
+            Connect to Phone
+          </button>
+          <button id="syncNowBtn"
+                  style="width: 100%; padding: 10px; background: #4A90E2; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; margin-top: 8px; display: none;">
+            Sync Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sync Connection Modal -->
+  <div id="syncModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: #1a1a1a; border: 2px solid #4A90E2; border-radius: 12px; padding: 25px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(74, 144, 226, 0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #4A90E2; font-size: 20px;">🔄 Phone Sync</h2>
+        <button id="closeSyncModal" style="background: none; border: none; color: #888; font-size: 24px; cursor: pointer; padding: 0; line-height: 1;" title="Close">×</button>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <div id="syncConnectionStatus" style="padding: 12px; border-radius: 8px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); margin-bottom: 15px; display: none;">
+          <div style="font-size: 14px; font-weight: 600; color: #FFD700; margin-bottom: 4px;">Status</div>
+          <div id="syncStatusText" style="font-size: 13px; color: #e0e0e0;"></div>
+        </div>
+        
+        <label style="display: block; font-size: 13px; font-weight: 600; color: #e0e0e0; margin-bottom: 8px;">Phone IP Address</label>
+        <input type="text" id="phoneIPModal" placeholder="192.168.1.100"
+               style="width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #e0e0e0; font-size: 14px; margin-bottom: 15px; font-family: inherit;">
+        
+        <label style="display: block; font-size: 13px; font-weight: 600; color: #e0e0e0; margin-bottom: 8px;">Port</label>
+        <input type="number" id="phonePortModal" placeholder="8080" value="8080"
+               style="width: 100%; padding: 12px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #e0e0e0; font-size: 14px; margin-bottom: 20px; font-family: inherit;">
+        
+        <button id="connectPhoneBtnModal"
+                style="width: 100%; padding: 14px; background: #4A90E2; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s;"
+                onmouseover="this.style.background='#357ABD'" onmouseout="this.style.background='#4A90E2'">
+          Connect to Phone
+        </button>
+        
+        <button id="disconnectPhoneBtnModal"
+                style="width: 100%; padding: 14px; background: #ff4444; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.3s; margin-top: 10px; display: none;"
+                onmouseover="this.style.background='#cc0000'" onmouseout="this.style.background='#ff4444'">
+          Disconnect
+        </button>
       </div>
     </div>
   </div>

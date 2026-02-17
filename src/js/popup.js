@@ -157,6 +157,9 @@ async function displayEntries() {
   const entriesDiv = document.getElementById("entries");
   const entryCount = document.getElementById("entryCount");
   
+  // Filter out deleted entries (sync-compatible)
+  entries = entries.filter(e => !e.deleted);
+  
   // Apply filters
   entries = filterEntriesByDate(entries, currentFilter);
   entries = filterEntriesBySearch(entries, currentSearchTerm);
@@ -371,7 +374,18 @@ async function saveCheckin() {
     }
   }
 
-  const entry = { time: new Date().toISOString(), note };
+  // Create sync-compatible entry
+  const now = new Date().toISOString();
+  const entry = {
+    id: crypto.randomUUID(),
+    time: now,
+    note: note,
+    createdAt: now,
+    updatedAt: now,
+    version: 1,
+    deleted: false
+  };
+
   const data = await chrome.storage.local.get("entries");
   const entries = data.entries || [];
   entries.unshift(entry);
@@ -494,6 +508,16 @@ async function updateDemoModeBanner() {
     banner.style.display = isEnabled ? 'block' : 'none';
   }
 }
+
+// Initialize Sync Manager and UI
+window.syncManager.init();
+const syncUI = new SyncUI('syncButtonContainer');
+syncUI.render();
+
+// Listen for sync complete to refresh entries
+window.addEventListener('syncComplete', () => {
+  displayEntries();
+});
 
 // Initialize
 loadPopupDraft(); // Load any saved draft
