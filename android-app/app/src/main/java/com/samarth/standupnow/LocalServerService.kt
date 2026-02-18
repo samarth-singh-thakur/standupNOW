@@ -37,27 +37,54 @@ class LocalServerService(
         }
         
         return try {
-            serverSocket = ServerSocket(port)
+            // Try to bind to specific IP if hotspot is active
+            val ipAddress = getLocalIpAddress(context)
+            Log.d(TAG, "Detected IP address: $ipAddress")
+            
+            serverSocket = if (ipAddress != null && ipAddress != "0.0.0.0") {
+                try {
+                    val inetAddress = java.net.InetAddress.getByName(ipAddress)
+                    Log.i(TAG, "Attempting to bind server to $ipAddress:$port")
+                    val socket = ServerSocket(port, 50, inetAddress)
+                    Log.i(TAG, "Successfully bound to $ipAddress:$port")
+                    socket
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to bind to $ipAddress:$port - ${e.javaClass.simpleName}: ${e.message}", e)
+                    Log.i(TAG, "Falling back to binding on all interfaces")
+                    ServerSocket(port)
+                }
+            } else {
+                Log.i(TAG, "No specific IP detected, binding server to all interfaces (0.0.0.0:$port)")
+                ServerSocket(port)
+            }
+            
+            val actualPort = serverSocket?.localPort ?: -1
+            val actualAddress = serverSocket?.inetAddress?.hostAddress ?: "unknown"
+            Log.i(TAG, "Server socket created successfully on $actualAddress:$actualPort")
+            
             isRunning = true
             
             serverThread = thread {
-                Log.i(TAG, "Server started on port $port")
+                Log.i(TAG, "Server thread started, listening for connections...")
                 while (isRunning && serverSocket?.isClosed == false) {
                     try {
                         val clientSocket = serverSocket?.accept()
                         clientSocket?.let {
+                            Log.d(TAG, "Client connected from ${it.inetAddress.hostAddress}")
                             executor.execute { handleClient(it) }
                         }
                     } catch (e: Exception) {
                         if (isRunning) {
-                            Log.e(TAG, "Error accepting client connection", e)
+                            Log.e(TAG, "Error accepting client connection: ${e.javaClass.simpleName}: ${e.message}", e)
                         }
                     }
                 }
+                Log.i(TAG, "Server thread stopped")
             }
             true
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to start server", e)
+            Log.e(TAG, "CRITICAL: Failed to start server - ${e.javaClass.simpleName}: ${e.message}", e)
+            Log.e(TAG, "Stack trace:", e)
             isRunning = false
             false
         }
@@ -417,34 +444,41 @@ class LocalServerService(
     
     fun getLocalIpAddress(context: Context): String? {
         try {
+            Log.d(TAG, "Starting IP address detection...")
+            
             // First, try to get IP from network interfaces (works for hotspot)
             val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+            val allInterfaces = mutableListOf<String>()
+            
             while (interfaces.hasMoreElements()) {
                 val networkInterface = interfaces.nextElement()
+                val interfaceName = networkInterface.name
+                allInterfaces.add(interfaceName)
                 
-                // Check for hotspot interfaces (common names)
-                val interfaceName = networkInterface.name.lowercase()
-                if (interfaceName.contains("wlan") ||
-                    interfaceName.contains("ap") ||
-                    interfaceName.contains("swlan") ||
-                    interfaceName.contains("tether")) {
-                    
+                Log.d(TAG, "Checking interface: $interfaceName (up=${networkInterface.isUp}, loopback=${networkInterface.isLoopback})")
+                
+                // Check ALL interfaces, not just specific names
+                if (networkInterface.isUp && !networkInterface.isLoopback) {
                     val addresses = networkInterface.inetAddresses
                     while (addresses.hasMoreElements()) {
                         val address = addresses.nextElement()
                         
+                        Log.d(TAG, "  Address: ${address.hostAddress} (IPv4=${address is java.net.Inet4Address}, loopback=${address.isLoopbackAddress})")
+                        
                         // We want IPv4 addresses that are not loopback
                         if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
                             val ip = address.hostAddress
-                            // Prefer hotspot range IPs (192.168.43.x, 192.168.49.x, 172.20.10.x)
-                            if (ip != null && (ip.startsWith("192.168.") || ip.startsWith("172.20."))) {
-                                Log.d(TAG, "Found IP on interface ${networkInterface.name}: $ip")
+                            // Accept any private IP range
+                            if (ip != null && (ip.startsWith("192.168.") || ip.startsWith("172.") || ip.startsWith("10."))) {
+                                Log.i(TAG, "✓ Found valid IP on interface $interfaceName: $ip")
                                 return ip
                             }
                         }
                     }
                 }
             }
+            
+            Log.d(TAG, "All interfaces found: ${allInterfaces.joinToString(", ")}")
             
             // Fallback: Try WiFi Manager (works when connected to WiFi)
             val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
