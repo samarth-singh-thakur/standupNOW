@@ -417,18 +417,53 @@ class LocalServerService(
     
     fun getLocalIpAddress(context: Context): String? {
         try {
+            // First, try to get IP from network interfaces (works for hotspot)
+            val interfaces = java.net.NetworkInterface.getNetworkInterfaces()
+            while (interfaces.hasMoreElements()) {
+                val networkInterface = interfaces.nextElement()
+                
+                // Check for hotspot interfaces (common names)
+                val interfaceName = networkInterface.name.lowercase()
+                if (interfaceName.contains("wlan") ||
+                    interfaceName.contains("ap") ||
+                    interfaceName.contains("swlan") ||
+                    interfaceName.contains("tether")) {
+                    
+                    val addresses = networkInterface.inetAddresses
+                    while (addresses.hasMoreElements()) {
+                        val address = addresses.nextElement()
+                        
+                        // We want IPv4 addresses that are not loopback
+                        if (!address.isLoopbackAddress && address is java.net.Inet4Address) {
+                            val ip = address.hostAddress
+                            // Prefer hotspot range IPs (192.168.43.x, 192.168.49.x, 172.20.10.x)
+                            if (ip != null && (ip.startsWith("192.168.") || ip.startsWith("172.20."))) {
+                                Log.d(TAG, "Found IP on interface ${networkInterface.name}: $ip")
+                                return ip
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Fallback: Try WiFi Manager (works when connected to WiFi)
             val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             val wifiInfo = wifiManager.connectionInfo
             val ipInt = wifiInfo.ipAddress
             
-            return String.format(
-                Locale.getDefault(),
-                "%d.%d.%d.%d",
-                ipInt and 0xff,
-                ipInt shr 8 and 0xff,
-                ipInt shr 16 and 0xff,
-                ipInt shr 24 and 0xff
-            )
+            if (ipInt != 0) {
+                return String.format(
+                    Locale.getDefault(),
+                    "%d.%d.%d.%d",
+                    ipInt and 0xff,
+                    ipInt shr 8 and 0xff,
+                    ipInt shr 16 and 0xff,
+                    ipInt shr 24 and 0xff
+                )
+            }
+            
+            Log.w(TAG, "Could not determine IP address")
+            return null
         } catch (e: Exception) {
             Log.e(TAG, "Error getting IP address", e)
             return null

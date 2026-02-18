@@ -1,63 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- EntryComposer Component: Primary interaction surface for creating entries -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/entry_composer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/bg_quick_jot_glow"
+    android:background="@color/bg_pure_black"
     android:animateLayoutChanges="true">
 
-    <!-- Top Action Bar -->
+    <!-- Centered Compact Composer Box -->
     <LinearLayout
+        android:id="@+id/composer_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="end">
+        android:layout_centerInParent="true"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:orientation="vertical"
+        android:background="@drawable/bg_input_section"
+        android:animateLayoutChanges="true">
 
-        <!-- Delete Draft Button -->
-        <ImageButton
-            android:id="@+id/delete_draft_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_menu_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Delete draft"
-            android:tint="@color/color_error"
-            android:layout_marginEnd="8dp"
-            android:visibility="gone" />
+        <!-- Top Action Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:gravity="end">
 
-        <!-- Save Button (hidden when empty) -->
-        <ImageButton
-            android:id="@+id/save_entry_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_menu_save"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Save entry"
-            android:tint="@color/gold_accent"
-            android:visibility="gone" />
+            <!-- Delete Draft Button -->
+            <ImageButton
+                android:id="@+id/delete_draft_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Delete draft"
+                android:tint="@color/color_error"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone" />
+
+            <!-- Save Button -->
+            <ImageButton
+                android:id="@+id/save_entry_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_menu_save"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Save entry"
+                android:tint="@color/gold_accent"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Entry Input with fixed height and scrolling -->
+        <EditText
+            android:id="@+id/composer_input"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:hint="What's on your mind?"
+            android:textColorHint="#80FFFFFF"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:fontFamily="sans-serif"
+            android:gravity="top|start"
+            android:padding="16dp"
+            android:background="@android:color/transparent"
+            android:inputType="textMultiLine|textCapSentences"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:scrollbarStyle="insideInset" />
 
     </LinearLayout>
 
-    <!-- Entry Input -->
-    <EditText
-        android:id="@+id/composer_input"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:hint="What's on your mind?"
-        android:textColorHint="#80FFFFFF"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:fontFamily="monospace"
-        android:gravity="top|start"
-        android:padding="16dp"
-        android:background="@android:color/transparent"
-        android:inputType="textMultiLine|textCapSentences"
-        android:scrollbars="vertical" />
-
-</LinearLayout>
+</RelativeLayout>
 
 <!-- Made with Bob -->

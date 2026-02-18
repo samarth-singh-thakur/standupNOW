@@ -91,6 +91,7 @@ object TimelineUtils {
         val timelineItems = mutableListOf<TimelineItem>()
         var currentDate: String? = null
         var previousTimestamp: Long? = null
+        var dayStartTimestamp: Long? = null
         
         entries.forEach { entry ->
             val timestamp = entry.timestamp
@@ -100,12 +101,19 @@ object TimelineUtils {
             if (dateHeader != currentDate) {
                 timelineItems.add(TimelineItem.DateHeader(dateHeader, timestamp))
                 currentDate = dateHeader
-                previousTimestamp = null // Reset gap calculation for new day
+                dayStartTimestamp = getStartOfDay(timestamp)
+                // Don't reset previousTimestamp - keep it for cross-day gaps
             }
             
             // Calculate time gap from previous entry
-            val timeGap = previousTimestamp?.let { prev ->
-                calculateTimeGap(prev, timestamp)
+            val timeGap = if (previousTimestamp != null) {
+                // Normal gap between entries
+                calculateTimeGap(previousTimestamp!!, timestamp)
+            } else if (dayStartTimestamp != null) {
+                // First entry of the day - show time since start of day
+                calculateTimeGap(dayStartTimestamp!!, timestamp)
+            } else {
+                null
             }
             
             // Add entry with optional time gap
@@ -114,6 +122,19 @@ object TimelineUtils {
         }
         
         return timelineItems
+    }
+    
+    /**
+     * Get start of day timestamp (midnight)
+     */
+    private fun getStartOfDay(timestamp: Long): Long {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timestamp
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
     }
     
     /**

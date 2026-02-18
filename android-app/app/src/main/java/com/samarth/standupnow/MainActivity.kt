@@ -20,6 +20,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -61,6 +62,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var entriesCountText: TextView
     private lateinit var searchIconButton: ImageButton
     private lateinit var menuIconButton: ImageButton
+    private lateinit var restartServerButton: ImageButton
     private lateinit var searchBarContainer: LinearLayout
     private lateinit var searchInput: EditText
     private lateinit var chipAll: Chip
@@ -68,7 +70,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chipYesterday: Chip
     private lateinit var chipThisWeek: Chip
     private lateinit var chipCustomRange: Chip
-    private lateinit var quickJotContainer: LinearLayout
+    private lateinit var quickJotContainer: RelativeLayout
+    private lateinit var composerContainer: LinearLayout
     private lateinit var quickJotInput: EditText
     private lateinit var saveEntryButton: ImageButton
     private lateinit var deleteDraftButton: ImageButton
@@ -110,6 +113,7 @@ class MainActivity : AppCompatActivity() {
         entriesCountText = findViewById(R.id.toolbar_entries_count)
         searchIconButton = findViewById(R.id.search_icon_button)
         menuIconButton = findViewById(R.id.menu_icon_button)
+        restartServerButton = findViewById(R.id.restart_server_button)
         searchBarContainer = findViewById(R.id.search_bar_container)
         searchInput = findViewById(R.id.search_input)
         chipAll = findViewById(R.id.chip_all)
@@ -119,6 +123,7 @@ class MainActivity : AppCompatActivity() {
         chipCustomRange = findViewById(R.id.chip_custom_range)
         // Find composer elements (in fullscreen composer view)
         quickJotContainer = findViewById(R.id.entry_composer_fullscreen)
+        composerContainer = quickJotContainer.findViewById(R.id.composer_container)
         quickJotInput = quickJotContainer.findViewById(R.id.composer_input)
         saveEntryButton = quickJotContainer.findViewById(R.id.save_entry_button)
         deleteDraftButton = quickJotContainer.findViewById(R.id.delete_draft_button)
@@ -144,9 +149,8 @@ class MainActivity : AppCompatActivity() {
 
         applyFiltersAndSearch()
         
-        // Start glow animation
-        val glowAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_pulse)
-        quickJotContainer.startAnimation(glowAnimation)
+        // Setup focus listener for glow animation
+        setupComposerFocusAnimation()
         
         // Setup save and delete buttons
         saveEntryButton.setOnClickListener {
@@ -160,7 +164,7 @@ class MainActivity : AppCompatActivity() {
         // Load draft if exists
         loadDraft()
         
-        // Watch input for save button visibility
+        // Watch input for action buttons visibility
         quickJotInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -184,6 +188,11 @@ class MainActivity : AppCompatActivity() {
         // Setup search icon toggle
         searchIconButton.setOnClickListener {
             toggleSearchBar()
+        }
+        
+        // Setup restart server button
+        restartServerButton.setOnClickListener {
+            restartServer()
         }
         
         // Setup menu icon with popup menu
@@ -815,6 +824,34 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+    
+    private fun restartServer() {
+        // Animate the restart button
+        restartServerButton.animate()
+            .rotationBy(360f)
+            .setDuration(500)
+            .start()
+        
+        // Stop and restart server
+        stopServer()
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            startServer()
+        }, 500)
+    }
+    
+    private fun setupComposerFocusAnimation() {
+        val glowAnimation = AnimationUtils.loadAnimation(this, R.anim.glow_pulse)
+        
+        quickJotInput.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                // Start glow animation when focused
+                composerContainer.startAnimation(glowAnimation)
+            } else {
+                // Stop animation when focus lost
+                composerContainer.clearAnimation()
+            }
+        }
     }
     
     override fun onDestroy() {
