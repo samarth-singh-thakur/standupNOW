@@ -417,12 +417,6 @@ body.extension-popup .container {
     position: relative;
 }
 
-/* .timeline-line {
-    width: 1px;
-    height: 12px;
-    background-color: #666666;
-    position: relative;
-} */
 
 .timeline-time {
     position: absolute;
@@ -433,8 +427,8 @@ body.extension-popup .container {
     padding: 2px 8px;
     border-radius: 4px;
     letter-spacing: 0.3px;
-    left: 5%;
-    transform: translateX(-50%);
+    left: 15px;
+    transform: none;
 }
 
 /* Responsive Design */

@@ -95,7 +95,7 @@ class EntryListComponent {
                     if (timeElapsed) {
                         html += `
                             <div class="timeline-connector">
-                                <div class="timeline-line"></div>
+
                                 <div class="timeline-time">+${timeElapsed}</div>
                             </div>
                         `;
