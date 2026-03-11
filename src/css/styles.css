@@ -37,10 +37,42 @@ body.extension-popup .container {
     background-color: #1a1a1a;
     border-radius: 12px;
     padding: 20px;
+    overflow: hidden;
+}
+
+/* Root Container with Scroll */
+.root-container {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow: hidden;
+    height: 100%;
+    overflow-y: scroll; /* Changed from auto to scroll to always show scrollbar */
+    overflow-x: hidden;
+    padding-right: 8px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a2a #0a0a0a;
+}
+
+/* Custom Scrollbar for Root Container - Always Visible Dark Subtle */
+.root-container::-webkit-scrollbar {
+    width: 6px;
+    -webkit-appearance: none; /* Prevent auto-hide */
+}
+
+.root-container::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-radius: 3px;
+}
+
+.root-container::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 3px;
+    min-height: 40px; /* Ensure thumb is always visible */
+}
+
+.root-container::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
 }
 
 /* Header */

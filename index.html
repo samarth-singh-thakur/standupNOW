@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StandupNOW</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body class="extension-popup">
+    <div class="container">
+        <div class="root-container">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="app-title">StandupNOW</h1>
+                <div class="header-icons">
+                    <button class="icon-btn" id="notificationBtn" aria-label="Notifications">
+                        <img src="src/assets/icons/bell.svg" alt="Notifications" class="icon">
+                    </button>
+                    <button class="icon-btn" id="refreshBtn" aria-label="Refresh">
+                        <img src="src/assets/icons/refresh-cw.svg" alt="Refresh" class="icon">
+                    </button>
+                    <button class="icon-btn" id="settingsBtn" aria-label="Settings">
+                        <img src="src/assets/icons/settings.svg" alt="Settings" class="icon">
+                    </button>
+                </div>
+            </header>
+
+            <!-- Quick Jot Down Component Container -->
+            <div id="quickJotContainer"></div>
+
+            <!-- Recent Entries Component Container -->
+            <div id="entriesContainer"></div>
+        </div>
+    </div>
+
+    <script src="src/js/quick-jot.js"></script>
+    <script src="src/js/entries.js"></script>
+    <script src="src/js/extension.js"></script>
+</body>
+</html>
