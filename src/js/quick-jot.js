@@ -217,7 +217,48 @@ class QuickJotComponent {
         const lastEntry = sortedEntries[0];
         const timeSince = this.formatTimeSince(lastEntry.timestamp);
 
-        this.input.placeholder = `${timeSince} have passed - what's new?`;
+        // Set empty placeholder to trigger :placeholder-shown
+        this.input.placeholder = ' ';
+        
+        // Create or update custom placeholder element
+        let customPlaceholder = this.container.querySelector('.custom-placeholder');
+        if (!customPlaceholder) {
+            customPlaceholder = document.createElement('div');
+            customPlaceholder.className = 'custom-placeholder';
+            this.input.parentElement.appendChild(customPlaceholder);
+            
+            // Hide custom placeholder when user types
+            this.input.addEventListener('input', () => {
+                if (this.input.value.trim()) {
+                    customPlaceholder.style.display = 'none';
+                } else {
+                    customPlaceholder.style.display = 'block';
+                }
+            });
+            
+            // Hide on focus if there's content
+            this.input.addEventListener('focus', () => {
+                if (this.input.value.trim()) {
+                    customPlaceholder.style.display = 'none';
+                }
+            });
+            
+            // Show on blur if empty
+            this.input.addEventListener('blur', () => {
+                if (!this.input.value.trim()) {
+                    customPlaceholder.style.display = 'block';
+                }
+            });
+        }
+        
+        // Set the styled placeholder content
+        customPlaceholder.innerHTML = `<span class="time-part">${timeSince}</span> have passed - what's new?`;
+        
+        // Show placeholder if input is empty
+        customPlaceholder.style.display = this.input.value.trim() ? 'none' : 'block';
+        
+        // Mark input for CSS targeting
+        this.input.setAttribute('data-placeholder-time', 'true');
     }
 }
 

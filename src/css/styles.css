@@ -174,7 +174,29 @@ body.extension-popup .container {
 }
 
 .jot-input::placeholder {
+    color: transparent;
+}
+
+/* Wrapper for custom placeholder */
+.quick-jot {
+    position: relative;
+}
+
+/* Custom styled placeholder overlay */
+.custom-placeholder {
+    position: absolute;
+    left: 35px;
+    top: 63px;
+    pointer-events: none;
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
     color: #666666;
+    line-height: 1.5;
+}
+
+.custom-placeholder .time-part {
+    color: #FFD400;
+    font-weight: 700;
 }
 
 /* Recent Entries Section */
