@@ -417,23 +417,23 @@ body.extension-popup .container {
     position: relative;
 }
 
-.timeline-line {
+/* .timeline-line {
     width: 1px;
     height: 12px;
     background-color: #666666;
     position: relative;
-}
+} */
 
 .timeline-time {
     position: absolute;
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 300;
     color: #888888;
     background-color: #1a1a1a;
     padding: 2px 8px;
     border-radius: 4px;
     letter-spacing: 0.3px;
-    left: 50%;
+    left: 5%;
     transform: translateX(-50%);
 }
 
