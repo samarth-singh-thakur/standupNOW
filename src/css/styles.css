@@ -1,0 +1,257 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    background-color: #000000;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Extension Popup Styles */
+body.extension-popup {
+    min-height: auto;
+    padding: 0;
+    width: 400px;
+    height: 600px;
+}
+
+body.extension-popup .container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
+/* Container */
+.container {
+    width: 400px;
+    height: 560px;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+.app-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #FFFF00;
+    letter-spacing: 0.5px;
+}
+
+.header-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+}
+
+.icon-btn:hover {
+    opacity: 0.7;
+}
+
+.icon-btn .icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+/* Quick Jot Down Section */
+.quick-jot {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.quick-jot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.save-btn {
+    padding: 2px;
+}
+
+.save-btn .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.section-label {
+    font-size: 10px;
+    font-weight: 300;
+    color: #FFD400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.jot-input {
+    background-color: #000000;
+    border: 2px solid #FFFF00;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    padding: 15px;
+    resize: none;
+    outline: none;
+    min-height: 100px;
+    transition: border-color 0.2s;
+}
+
+.jot-input:focus {
+    border-color: #FFD400;
+}
+
+.jot-input::placeholder {
+    color: #666666;
+}
+
+/* Recent Entries Section */
+.recent-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    min-height: 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFFF00;
+}
+
+.entry-badge {
+    background-color: transparent;
+    border: 1px solid #FFFF00;
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 10px;
+    color: #FFFF00;
+    font-weight: 300;
+}
+
+/* Entries List */
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 5px;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Custom Scrollbar */
+.entries-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.entries-list::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-radius: 4px;
+}
+
+.entries-list::-webkit-scrollbar-thumb {
+    background: #FFFF00;
+    border-radius: 4px;
+}
+
+.entries-list::-webkit-scrollbar-thumb:hover {
+    background: #FFD400;
+}
+
+/* Entry Card */
+.entry-card {
+    background-color: #000000;
+    border: 1px solid #FFFF00;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.entry-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 0, 0.1);
+}
+
+.entry-time {
+    font-size: 10px;
+    font-weight: 300;
+    color: #23F508;
+    letter-spacing: 0.3px;
+}
+
+.entry-content {
+    font-size: 12px;
+    font-weight: 400;
+    color: #FFFFFF;
+    line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* Animation for new entries */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.entry-card.new {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Made with Bob */
