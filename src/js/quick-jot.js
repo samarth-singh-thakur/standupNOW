@@ -6,6 +6,7 @@ class QuickJotComponent {
         this.input = null;
         this.saveBtn = null;
         this.draftKey = 'standupnow_draft';
+        this.storageKey = 'standupnow_entries';
         this.onSubmitCallback = null;
     }
 
@@ -17,6 +18,7 @@ class QuickJotComponent {
         this.setupEventListeners();
         this.loadDraft();
         this.updateSaveButtonVisibility();
+        this.updatePlaceholder();
         this.input.focus();
     }
 
@@ -78,13 +80,15 @@ class QuickJotComponent {
     }
 
     // Submit the entry
-    submit() {
+    async submit() {
         const content = this.getValue();
         if (content.trim() && this.onSubmitCallback) {
-            const success = this.onSubmitCallback(content);
+            const success = await this.onSubmitCallback(content);
             if (success) {
                 this.clear();
                 this.clearDraft();
+                // Update placeholder after new entry
+                setTimeout(() => this.updatePlaceholder(), 100);
             }
         }
     }
@@ -157,6 +161,63 @@ class QuickJotComponent {
         
         const hasText = this.getValue().trim().length > 0;
         this.saveBtn.style.display = hasText ? 'flex' : 'none';
+    }
+
+    // Calculate time elapsed since last entry
+    formatTimeSince(timestamp) {
+        const diff = Date.now() - new Date(timestamp).getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            const remainingHours = hours % 24;
+            if (remainingHours > 0) {
+                return `${days} day${days > 1 ? 's' : ''} ${remainingHours} hour${remainingHours > 1 ? 's' : ''}`;
+            }
+            return `${days} day${days > 1 ? 's' : ''}`;
+        } else if (hours > 0) {
+            const remainingMinutes = minutes % 60;
+            if (remainingMinutes > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} min`;
+            }
+            return `${hours} hour${hours > 1 ? 's' : ''}`;
+        } else if (minutes > 0) {
+            return `${minutes} min`;
+        } else {
+            return 'a few seconds';
+        }
+    }
+
+    // Update placeholder text based on last entry
+    async updatePlaceholder() {
+        if (!this.input) return;
+
+        // Load entries
+        let entries = [];
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            const result = await new Promise(resolve => {
+                chrome.storage.local.get([this.storageKey], (result) => {
+                    resolve(result[this.storageKey] || []);
+                });
+            });
+            entries = result;
+        } else {
+            const stored = localStorage.getItem(this.storageKey);
+            entries = stored ? JSON.parse(stored) : [];
+        }
+
+        if (entries.length === 0) {
+            this.input.placeholder = 'Type your standup notes here...';
+            return;
+        }
+
+        // Get the most recent entry
+        const sortedEntries = entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const lastEntry = sortedEntries[0];
+        const timeSince = this.formatTimeSince(lastEntry.timestamp);
+
+        this.input.placeholder = `${timeSince} have passed - what's new?`;
     }
 }
 

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Feature Demo - StandupNOW</title>
+    <style>
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            background-color: #000;
+            color: #fff;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        h1 { color: #FFFF00; }
+        h2 { color: #FFD400; margin-top: 30px; }
+        .demo-section {
+            background: #1a1a1a;
+            border: 1px solid #FFFF00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .entry-card {
+            background-color: #000;
+            border: 1px solid #FFFF00;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 12px 0;
+        }
+        .entry-time {
+            font-size: 10px;
+            color: #23F508;
+            margin-bottom: 8px;
+        }
+        .timeline-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0;
+            position: relative;
+        }
+        .timeline-line {
+            width: 1px;
+            height: 20px;
+            background-color: #444444;
+        }
+        .timeline-time {
+            position: absolute;
+            font-size: 9px;
+            font-weight: 300;
+            color: #888888;
+            background-color: #1a1a1a;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #FFD400;
+        }
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .feature-list li:before {
+            content: "✓ ";
+            color: #23F508;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🕐 Timeline Feature - StandupNOW</h1>
+    
+    <div class="demo-section">
+        <h2>Feature Overview</h2>
+        <p>A subtle timeline connector now appears between entries, showing how much time has passed since the last entry.</p>
+        
+        <ul class="feature-list">
+            <li>Displays time gaps from <code>0min</code> to <code>1d2h</code> (26 hours max)</li>
+            <li>Smart formatting: <code>5m</code>, <code>1h30m</code>, <code>3h45m</code>, <code>1d2h</code></li>
+            <li>Subtle design with thin vertical line and gray time badge</li>
+            <li>Only shows when time gap is within the specified range</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>Visual Example</h2>
+        <p>Here's how the timeline appears between entries:</p>
+        
+        <div class="entry-card">
+            <div class="entry-time">Today, 11:25 PM</div>
+            <div>Most recent entry - just added</div>
+        </div>
+        
+        <div class="timeline-connector">
+            <div class="timeline-line"></div>
+            <div class="timeline-time">+5m</div>
+        </div>
+        
+        <div class="entry-card">
+            <div class="entry-time">Today, 11:20 PM</div>
+            <div>Entry from 5 minutes ago</div>
+        </div>
+        
+        <div class="timeline-connector">
+            <div class="timeline-line"></div>
+            <div class="timeline-time">+1h30m</div>
+        </div>
+        
+        <div class="entry-card">
+            <div class="entry-time">Today, 09:50 PM</div>
+            <div>Entry from 1 hour 30 minutes ago</div>
+        </div>
+        
+        <div class="timeline-connector">
+            <div class="timeline-line"></div>
+            <div class="timeline-time">+3h45m</div>
+        </div>
+        
+        <div class="entry-card">
+            <div class="entry-time">Today, 06:05 PM</div>
+            <div>Entry from 3 hours 45 minutes ago</div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Implementation Details</h2>
+        <p><strong>Files Modified:</strong></p>
+        <ul>
+            <li><code>src/js/entry-list.js</code> - Added time calculation and timeline rendering</li>
+            <li><code>src/css/styles.css</code> - Added timeline connector styles</li>
+        </ul>
+        
+        <p><strong>How to See It:</strong></p>
+        <ol>
+            <li>Open the StandupNOW app</li>
+            <li>Add multiple entries with time gaps between them</li>
+            <li>The timeline will automatically appear showing the elapsed time</li>
+        </ol>
+    </div>
+</body>
+</html>

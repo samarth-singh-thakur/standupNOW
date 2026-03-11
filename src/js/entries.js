@@ -6,6 +6,7 @@ class EntriesComponent {
         this.entriesList = null;
         this.entryBadge = null;
         this.storageKey = 'standupnow_entries';
+        this.currentFilter = 'today'; // Default filter
     }
 
     // Initialize the component
@@ -13,6 +14,7 @@ class EntriesComponent {
         this.loadTemplate();
         this.entriesList = document.getElementById('entriesList');
         this.entryBadge = document.getElementById('entryBadge');
+        this.setupFilterButtons();
         this.render();
     }
 
@@ -24,6 +26,15 @@ class EntriesComponent {
                 <div class="section-header">
                     <h2 class="section-title">Recent Entries</h2>
                     <span class="entry-badge" id="entryBadge">0 entries</span>
+                </div>
+
+                <!-- Filter Buttons -->
+                <div class="filter-controls">
+                    <div class="filter-buttons">
+                        <button class="filter-btn" data-filter="all">All</button>
+                        <button class="filter-btn active" data-filter="today">Today</button>
+                        <button class="filter-btn" data-filter="yesterday">Yesterday</button>
+                    </div>
                 </div>
 
                 <!-- Entries List -->
@@ -94,6 +105,46 @@ class EntriesComponent {
         return div.innerHTML;
     }
 
+    // Setup filter button event listeners
+    setupFilterButtons() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+                // Update filter and re-render
+                this.currentFilter = btn.dataset.filter;
+                this.render();
+            });
+        });
+    }
+
+    // Filter entries by date
+    filterEntriesByDate(entries, filter) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        switch (filter) {
+            case 'today':
+                return entries.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    return entryDate >= today;
+                });
+            case 'yesterday':
+                return entries.filter(entry => {
+                    const entryDate = new Date(entry.timestamp);
+                    return entryDate >= yesterday && entryDate < today;
+                });
+            case 'all':
+            default:
+                return entries;
+        }
+    }
+
     // Update entry badge count
     updateBadge(count) {
         if (this.entryBadge) {
@@ -101,29 +152,92 @@ class EntriesComponent {
         }
     }
 
+    // Calculate time elapsed between two timestamps
+    calculateTimeElapsed(newerTimestamp, olderTimestamp) {
+        const diff = new Date(newerTimestamp) - new Date(olderTimestamp);
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        // Only show if within 0min to 1d2h range (max 26 hours)
+        if (minutes < 0 || hours > 26) {
+            return null;
+        }
+
+        if (days > 0) {
+            const remainingHours = hours % 24;
+            if (remainingHours > 0) {
+                return `${days}d${remainingHours}h`;
+            }
+            return `${days}d`;
+        } else if (hours > 0) {
+            const remainingMinutes = minutes % 60;
+            if (remainingMinutes > 0) {
+                return `${hours}h${remainingMinutes}m`;
+            }
+            return `${hours}h`;
+        } else if (minutes > 0) {
+            return `${minutes}m`;
+        } else {
+            return '0m';
+        }
+    }
+
     // Render entries
     async render() {
-        const entries = await this.loadEntries();
+        let entries = await this.loadEntries();
         
         if (!this.entriesList) return;
 
-        if (entries.length === 0) {
-            this.entriesList.innerHTML = '<div class="entry-card"><div class="entry-content" style="color: #666;">No entries yet. Start by jotting down your standup notes above!</div></div>';
+        // Apply filter
+        const filteredEntries = this.filterEntriesByDate(entries, this.currentFilter);
+
+        if (filteredEntries.length === 0) {
+            const emptyMessage = this.currentFilter === 'today'
+                ? 'No entries today yet. Start by jotting down your standup notes above!'
+                : this.currentFilter === 'yesterday'
+                ? 'No entries from yesterday.'
+                : 'No entries yet. Start by jotting down your standup notes above!';
+            
+            this.entriesList.innerHTML = `<div class="entry-card"><div class="entry-content" style="color: #666;">${emptyMessage}</div></div>`;
             this.updateBadge(0);
             return;
         }
         
-        this.entriesList.innerHTML = entries
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-            .map(entry => `
-                <div class="entry-card" data-id="${entry.id}">
-                    <div class="entry-time">${this.formatTimestamp(entry.timestamp)}</div>
-                    <div class="entry-content">${this.escapeHtml(entry.content)}</div>
-                </div>
-            `)
+        // Sort filtered entries
+        const sortedEntries = filteredEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // Render entries with timeline connectors
+        const entriesHTML = sortedEntries
+            .map((entry, index) => {
+                let html = `
+                    <div class="entry-card entry-fade-in" data-id="${entry.id}">
+                        <div class="entry-time">${this.formatTimestamp(entry.timestamp)}</div>
+                        <div class="entry-content">${this.escapeHtml(entry.content)}</div>
+                    </div>
+                `;
+                
+                // Add timeline connector between entries (except after last entry)
+                if (index < sortedEntries.length - 1) {
+                    const nextEntry = sortedEntries[index + 1];
+                    const timeElapsed = this.calculateTimeElapsed(entry.timestamp, nextEntry.timestamp);
+                    
+                    if (timeElapsed) {
+                        html += `
+                            <div class="timeline-connector">
+                                <div class="timeline-line"></div>
+                                <div class="timeline-time">+${timeElapsed}</div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                return html;
+            })
             .join('');
         
-        this.updateBadge(entries.length);
+        this.entriesList.innerHTML = entriesHTML;
+        this.updateBadge(filteredEntries.length);
     }
 
     // Add new entry
