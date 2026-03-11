@@ -36,12 +36,29 @@ class EntryListComponent {
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
+        const weeks = Math.floor(days / 7);
+        const months = Math.floor(days / 30);
 
-        // Only show if within 0min to 1d2h range (max 26 hours)
-        if (minutes < 0 || hours > 26) {
+        // Don't show if negative time
+        if (minutes < 0) {
             return null;
         }
 
+        // For very long periods (> 60 days), show months
+        if (months > 2) {
+            return `${months}mo`;
+        }
+        
+        // For periods > 14 days, show weeks
+        if (weeks > 2) {
+            const remainingDays = days % 7;
+            if (remainingDays > 0) {
+                return `${weeks}w${remainingDays}d`;
+            }
+            return `${weeks}w`;
+        }
+        
+        // For periods with days
         if (days > 0) {
             const remainingHours = hours % 24;
             if (remainingHours > 0) {
