@@ -83,6 +83,19 @@ body.extension-popup .container {
     padding-bottom: 10px;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+}
+
+.standup-guy-icon {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    margin-right: -16px;
+}
+
 .app-title {
     font-size: 20px;
     font-weight: bold;
