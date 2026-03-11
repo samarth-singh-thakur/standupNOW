@@ -173,10 +173,13 @@ body.extension-popup .container {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: auto;
+    overflow-y: scroll;
     padding-right: 5px;
     flex: 1;
     min-height: 0;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #FFFF00 #0a0a0a;
 }
 
 /* Custom Scrollbar */
