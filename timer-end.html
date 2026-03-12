@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time for Standup! - StandupNOW</title>
+    <link rel="stylesheet" href="src/css/timer-end.css">
+</head>
+<body>
+    <div class="timer-end-container">
+        <div class="timer-end-content">
+            <!-- Icon/Animation -->
+            <div class="timer-icon">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="55" stroke="#4F46E5" stroke-width="4" fill="none" opacity="0.2"/>
+                    <circle cx="60" cy="60" r="45" stroke="#4F46E5" stroke-width="3" fill="none" opacity="0.4"/>
+                    <circle cx="60" cy="60" r="35" fill="#4F46E5" opacity="0.1"/>
+                    <path d="M60 30 L60 60 L75 75" stroke="#4F46E5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="60" cy="60" r="4" fill="#4F46E5"/>
+                </svg>
+            </div>
+
+            <!-- Main Message -->
+            <h1 class="timer-title">Time for Your Standup Update! ⏰</h1>
+            <p class="timer-message">
+                It's been an hour since your last entry. What have you been working on?
+            </p>
+
+            <!-- Timer Info -->
+            <div class="timer-info">
+                <div class="info-item">
+                    <span class="info-label">Last Entry:</span>
+                    <span class="info-value" id="lastEntryTime">Loading...</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Time Elapsed:</span>
+                    <span class="info-value" id="timeElapsed">1 hour</span>
+                </div>
+            </div>
+
+            <!-- Quick Entry Form -->
+            <div class="quick-entry-section">
+                <h2 class="section-title">Add Your Update</h2>
+                <textarea 
+                    id="quickEntryText" 
+                    class="quick-entry-textarea" 
+                    placeholder="What did you work on in the last hour?&#10;&#10;Example:&#10;- Fixed bug in user authentication&#10;- Reviewed PR #123&#10;- Meeting with design team"
+                    rows="6"
+                ></textarea>
+                <div class="button-group">
+                    <button id="submitBtn" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16.5 5L7.5 14L3.5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Submit & Reset Timer
+                    </button>
+                    <button id="snoozeBtn" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 6V10L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                        Snooze (15 min)
+                    </button>
+                    <button id="dismissBtn" class="btn btn-tertiary">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Entries Preview -->
+            <div class="recent-entries-section">
+                <h3 class="section-subtitle">Recent Entries</h3>
+                <div id="recentEntriesList" class="recent-entries-list">
+                    <p class="loading-text">Loading recent entries...</p>
+                </div>
+            </div>
+
+            <!-- Success Message (hidden by default) -->
+            <div id="successMessage" class="success-message" style="display: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" fill="#10B981"/>
+                    <path d="M8 12L11 15L16 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Entry added successfully! Timer reset.</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/timer-end.js"></script>
+</body>
+</html>

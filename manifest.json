@@ -8,8 +8,13 @@
     "default_title": "StandupNOW"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "alarms",
+    "tabs"
   ],
+  "background": {
+    "service_worker": "src/js/background.js"
+  },
   "icons": {
     "16": "src/assets/icons/icon16.png",
     "48": "src/assets/icons/icon48.png",

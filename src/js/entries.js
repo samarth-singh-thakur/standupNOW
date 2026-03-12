@@ -391,7 +391,22 @@ class EntriesComponent {
             }
         }, 10);
 
+        // Reset timer when new entry is added
+        this.resetTimer(now);
+
         return true;
+    }
+
+    // Reset the 1-hour timer
+    resetTimer(entryTime) {
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.sendMessage({
+                type: 'RESET_TIMER',
+                entryTime: entryTime
+            }).catch(error => {
+                console.log('Timer reset message sent (background may not be ready yet):', error);
+            });
+        }
     }
 
     // Clear all entries

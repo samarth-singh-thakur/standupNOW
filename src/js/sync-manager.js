@@ -173,6 +173,11 @@ class SyncManager {
             
             console.log('Merge complete');
 
+            // Reset timer if new entries were received from phone
+            if (phoneEntries.length > 0) {
+                await this.resetTimerForNewEntries(phoneEntries);
+            }
+
             // Update last sync time
             this.config.lastSyncTime = syncResponse.serverTime || new Date().toISOString();
             await this.saveConfig();
@@ -234,6 +239,30 @@ class SyncManager {
                 resolve();
             });
         });
+    }
+
+    // Reset timer when new entries arrive from phone
+    async resetTimerForNewEntries(phoneEntries) {
+        if (phoneEntries.length === 0) return;
+
+        // Find the most recent entry from phone
+        const sortedEntries = phoneEntries.sort((a, b) =>
+            new Date(b.time) - new Date(a.time)
+        );
+        const latestEntry = sortedEntries[0];
+
+        // Send message to background to reset timer
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            try {
+                await chrome.runtime.sendMessage({
+                    type: 'RESET_TIMER',
+                    entryTime: latestEntry.time
+                });
+                console.log('Timer reset for phone entry:', latestEntry.time);
+            } catch (error) {
+                console.log('Timer reset message sent (background may not be ready yet):', error);
+            }
+        }
     }
 
     // Add event listener

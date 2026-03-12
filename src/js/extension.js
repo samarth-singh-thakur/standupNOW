@@ -11,6 +11,7 @@ let quickJotComponent;
 let entriesComponent;
 let syncManager;
 let syncModalComponent;
+let settingsModalComponent;
 let syncTimeInterval;
 
 // Sync time update function
@@ -72,6 +73,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     syncModalComponent = new SyncModalComponent(syncManager);
     syncModalComponent.init();
     
+    // Initialize settings modal
+    settingsModalComponent = new SettingsModalComponent();
+    await settingsModalComponent.init();
+    
     // Start sync time updater
     updateSyncTime();
     syncTimeInterval = setInterval(updateSyncTime, 30000); // Update every 30 seconds
@@ -90,6 +95,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             entriesComponent.render();
         }
         updateSyncTime();
+    });
+    
+    // Listen for entries cleared event
+    window.addEventListener('entriesCleared', () => {
+        if (entriesComponent) {
+            entriesComponent.render();
+        }
     });
 });
 
@@ -114,9 +126,8 @@ refreshBtn.addEventListener('click', () => {
 
 // Settings button
 settingsBtn.addEventListener('click', () => {
-    const confirmClear = confirm('Settings:\n\nWould you like to clear all entries?');
-    if (confirmClear && entriesComponent) {
-        entriesComponent.clearAll();
+    if (settingsModalComponent) {
+        settingsModalComponent.show();
     }
 });
 
