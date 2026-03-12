@@ -1,0 +1,105 @@
+<!-- Sync Modal Component -->
+<div class="modal-overlay" id="syncModalOverlay">
+    <div class="modal-content sync-modal">
+        <div class="modal-header">
+            <h2>Sync with Phone</h2>
+            <button class="modal-close" id="closeSyncModal" aria-label="Close">×</button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Connection Setup Section -->
+            <div class="sync-section">
+                <h3>Connection Setup</h3>
+                <div class="form-group">
+                    <label for="phoneIP">Phone IP Address</label>
+                    <input 
+                        type="text" 
+                        id="phoneIP" 
+                        class="form-input" 
+                        placeholder="192.168.1.5"
+                        pattern="^(\d{1,3}\.){3}\d{1,3}$"
+                    >
+                    <small class="form-hint">Find this in your phone's StandupNOW app</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phonePort">Port</label>
+                    <input 
+                        type="number" 
+                        id="phonePort" 
+                        class="form-input" 
+                        value="8080"
+                        min="1"
+                        max="65535"
+                    >
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="testConnectionBtn">
+                        <span class="btn-icon">🔍</span>
+                        Test Connection
+                    </button>
+                    <button class="btn btn-primary" id="saveConnectionBtn">
+                        <span class="btn-icon">💾</span>
+                        Save & Enable Sync
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Connection Status Section -->
+            <div class="sync-section">
+                <h3>Status</h3>
+                <div class="sync-status">
+                    <div class="status-indicator-wrapper">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span class="status-text" id="statusText">Not connected</span>
+                    </div>
+                    <div class="status-details" id="statusDetails"></div>
+                </div>
+            </div>
+            
+            <!-- Sync Info Section -->
+            <div class="sync-section">
+                <h3>Sync Information</h3>
+                <div class="sync-info">
+                    <div class="info-row">
+                        <span class="info-label">Last sync:</span>
+                        <span class="info-value" id="lastSyncTime">Never</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Auto-sync:</span>
+                        <span class="info-value" id="autoSyncStatus">Disabled</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Server URL:</span>
+                        <span class="info-value" id="serverUrl">Not configured</span>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-primary" id="manualSyncBtn" disabled>
+                        <span class="btn-icon">🔄</span>
+                        Sync Now
+                    </button>
+                    <button class="btn btn-danger" id="disableSyncBtn" disabled>
+                        <span class="btn-icon">⏸️</span>
+                        Disable Sync
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="sync-section sync-help">
+                <h3>How to Setup</h3>
+                <ol class="help-list">
+                    <li>Open StandupNOW app on your Android phone</li>
+                    <li>Start the sync server (it will show IP and port)</li>
+                    <li>Make sure your phone and computer are on the same WiFi network</li>
+                    <li>Enter the IP address and port shown on your phone</li>
+                    <li>Click "Test Connection" to verify</li>
+                    <li>Click "Save & Enable Sync" to start syncing</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

@@ -8,9 +8,11 @@ const settingsBtn = document.getElementById('settingsBtn');
 // Initialize Components
 let quickJotComponent;
 let entriesComponent;
+let syncManager;
+let syncModalComponent;
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Initialize the Quick Jot Down component
     quickJotComponent = new QuickJotComponent('quickJotContainer');
     quickJotComponent.init();
@@ -19,12 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
     entriesComponent = new EntriesComponent('entriesContainer');
     entriesComponent.init();
     
+    // Initialize sync manager
+    syncManager = new SyncManager();
+    await syncManager.init();
+    
+    // Initialize sync modal
+    syncModalComponent = new SyncModalComponent(syncManager);
+    syncModalComponent.init();
+    
     // Connect Quick Jot to Entries - when user submits, add to entries
     quickJotComponent.onSubmit((content) => {
         if (entriesComponent) {
             return entriesComponent.addEntry(content);
         }
         return false;
+    });
+    
+    // Listen for sync complete events to refresh entries
+    window.addEventListener('syncComplete', () => {
+        if (entriesComponent) {
+            entriesComponent.render();
+        }
     });
 });
 
@@ -33,10 +50,10 @@ notificationBtn.addEventListener('click', () => {
     alert('Notifications feature coming soon!');
 });
 
-// Refresh button
+// Refresh button - Opens sync modal
 refreshBtn.addEventListener('click', () => {
-    if (entriesComponent) {
-        entriesComponent.render();
+    if (syncModalComponent) {
+        syncModalComponent.show();
     }
     
     // Add rotation animation
