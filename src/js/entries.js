@@ -75,6 +75,15 @@ class EntriesComponent {
         }
     }
 
+    // Generate UUID v4
+    generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     // Format timestamp
     formatTimestamp(date) {
         const now = new Date();
@@ -128,20 +137,23 @@ class EntriesComponent {
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
         
+        // Filter out deleted entries
+        const activeEntries = entries.filter(entry => !entry.deleted);
+        
         switch (filter) {
             case 'today':
-                return entries.filter(entry => {
-                    const entryDate = new Date(entry.timestamp);
+                return activeEntries.filter(entry => {
+                    const entryDate = new Date(entry.time);
                     return entryDate >= today;
                 });
             case 'yesterday':
-                return entries.filter(entry => {
-                    const entryDate = new Date(entry.timestamp);
+                return activeEntries.filter(entry => {
+                    const entryDate = new Date(entry.time);
                     return entryDate >= yesterday && entryDate < today;
                 });
             case 'all':
             default:
-                return entries;
+                return activeEntries;
         }
     }
 
@@ -222,22 +234,22 @@ class EntriesComponent {
         }
         
         // Sort filtered entries
-        const sortedEntries = filteredEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const sortedEntries = filteredEntries.sort((a, b) => new Date(b.time) - new Date(a.time));
         
         // Render entries with timeline connectors
         const entriesHTML = sortedEntries
             .map((entry, index) => {
                 let html = `
                     <div class="entry-card entry-fade-in" data-id="${entry.id}">
-                        <div class="entry-time">${this.formatTimestamp(entry.timestamp)}</div>
-                        <div class="entry-content">${this.escapeHtml(entry.content)}</div>
+                        <div class="entry-time">${this.formatTimestamp(entry.time)}</div>
+                        <div class="entry-content">${this.escapeHtml(entry.note)}</div>
                     </div>
                 `;
                 
                 // Add timeline connector between entries (except after last entry)
                 if (index < sortedEntries.length - 1) {
                     const nextEntry = sortedEntries[index + 1];
-                    const timeElapsed = this.calculateTimeElapsed(entry.timestamp, nextEntry.timestamp);
+                    const timeElapsed = this.calculateTimeElapsed(entry.time, nextEntry.time);
                     
                     if (timeElapsed) {
                         html += `
@@ -262,10 +274,15 @@ class EntriesComponent {
         if (!content.trim()) return false;
         
         const entries = await this.loadEntries();
+        const now = new Date().toISOString();
         const newEntry = {
-            id: Date.now().toString(),
-            content: content.trim(),
-            timestamp: new Date().toISOString()
+            id: this.generateUUID(),
+            time: now,
+            note: content.trim(),
+            createdAt: now,
+            updatedAt: now,
+            version: 1,
+            deleted: false
         };
         
         entries.push(newEntry);

@@ -3,8 +3,12 @@
 class EntryItemComponent {
     constructor(data) {
         this.id = data.id;
-        this.content = data.content;
-        this.timestamp = data.timestamp;
+        this.note = data.note;
+        this.time = data.time;
+        this.createdAt = data.createdAt;
+        this.updatedAt = data.updatedAt;
+        this.version = data.version;
+        this.deleted = data.deleted;
     }
 
     // Format timestamp
@@ -39,8 +43,8 @@ class EntryItemComponent {
 
     // Render the component and return HTML string
     render() {
-        const formattedTime = this.formatTimestamp(this.timestamp);
-        const escapedContent = this.escapeHtml(this.content);
+        const formattedTime = this.formatTimestamp(this.time);
+        const escapedContent = this.escapeHtml(this.note);
         
         return `
             <div class="entry-card" data-id="${this.id}">

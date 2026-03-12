@@ -212,10 +212,11 @@ class QuickJotComponent {
             return;
         }
 
-        // Get the most recent entry
-        const sortedEntries = entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // Filter out deleted entries and get the most recent entry
+        const activeEntries = entries.filter(entry => !entry.deleted);
+        const sortedEntries = activeEntries.sort((a, b) => new Date(b.time) - new Date(a.time));
         const lastEntry = sortedEntries[0];
-        const timeSince = this.formatTimeSince(lastEntry.timestamp);
+        const timeSince = this.formatTimeSince(lastEntry.time);
 
         // Set empty placeholder to trigger :placeholder-shown
         this.input.placeholder = ' ';

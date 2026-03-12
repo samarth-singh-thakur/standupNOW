@@ -93,9 +93,10 @@ class EntryListComponent {
             return;
         }
 
-        // Sort entries by timestamp (newest first)
-        const sortedEntries = [...this.entries].sort((a, b) =>
-            new Date(b.timestamp) - new Date(a.timestamp)
+        // Filter out deleted entries and sort by time (newest first)
+        const activeEntries = this.entries.filter(entry => !entry.deleted);
+        const sortedEntries = [...activeEntries].sort((a, b) =>
+            new Date(b.time) - new Date(a.time)
         );
 
         // Create EntryItem components and render them with timeline
@@ -107,7 +108,7 @@ class EntryListComponent {
                 // Add timeline connector between entries (except after last entry)
                 if (index < sortedEntries.length - 1) {
                     const nextEntry = sortedEntries[index + 1];
-                    const timeElapsed = this.calculateTimeElapsed(entryData.timestamp, nextEntry.timestamp);
+                    const timeElapsed = this.calculateTimeElapsed(entryData.time, nextEntry.time);
                     
                     if (timeElapsed) {
                         html += `
