@@ -208,7 +208,7 @@ class EntriesComponent {
         } else if (minutes > 0) {
             return `${minutes}m`;
         } else {
-            return '0m';
+            return null;
         }
     }
 
