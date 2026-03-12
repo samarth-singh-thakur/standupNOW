@@ -1,0 +1,204 @@
+/* Filter Controls and Copy Button Styles */
+.filter-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.filter-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.filter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.filter-btn:active {
+    transform: translateY(0);
+}
+
+.filter-btn[data-filter="all"] {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    color: #fff;
+}
+
+.filter-btn[data-filter="all"]:hover {
+    box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+}
+
+.filter-btn[data-filter="all"].active {
+    box-shadow: 0 0 14px rgba(74, 144, 226, 0.42), 0 4px 10.5px rgba(74, 144, 226, 0.28);
+    animation: pulseBlue 2s ease-in-out infinite;
+}
+
+.filter-btn[data-filter="today"] {
+    background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%);
+    color: #000;
+}
+
+.filter-btn[data-filter="today"]:hover {
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+}
+
+.filter-btn[data-filter="today"].active {
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.42), 0 4px 10.5px rgba(255, 215, 0, 0.28);
+    animation: pulseYellow 2s ease-in-out infinite;
+}
+
+.filter-btn[data-filter="yesterday"] {
+    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+    color: #fff;
+}
+
+.filter-btn[data-filter="yesterday"]:hover {
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.5);
+}
+
+.filter-btn[data-filter="yesterday"].active {
+    box-shadow: 0 0 14px rgba(155, 89, 182, 0.42), 0 4px 10.5px rgba(155, 89, 182, 0.28);
+    animation: pulsePurple 2s ease-in-out infinite;
+}
+
+.filter-btn:not(.active) {
+    opacity: 0.6;
+}
+
+.filter-btn:not(.active):hover {
+    opacity: 1;
+}
+
+/* Copy Entries Button */
+.copy-entries-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    margin-left: auto;
+    position: relative;
+    overflow: hidden;
+    width: 36px;
+    height: 36px;
+}
+
+.copy-entries-btn .copy-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    filter: brightness(0) invert(1);
+    position: relative;
+    z-index: 1;
+}
+
+.copy-entries-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.copy-entries-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.copy-entries-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.5);
+}
+
+.copy-entries-btn:active {
+    transform: translateY(0);
+}
+
+.copy-entries-btn.success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.42), 0 4px 10.5px rgba(16, 185, 129, 0.28);
+}
+
+.copy-entries-btn.error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.42), 0 4px 10.5px rgba(239, 68, 68, 0.28);
+}
+
+/* Pulse animations for active filters */
+@keyframes pulseBlue {
+    0%, 100% {
+        box-shadow: 0 0 14px rgba(74, 144, 226, 0.42), 0 4px 10.5px rgba(74, 144, 226, 0.28);
+    }
+    50% {
+        box-shadow: 0 0 21px rgba(74, 144, 226, 0.56), 0 6px 14px rgba(74, 144, 226, 0.42);
+    }
+}
+
+@keyframes pulseYellow {
+    0%, 100% {
+        box-shadow: 0 0 14px rgba(255, 215, 0, 0.42), 0 4px 10.5px rgba(255, 215, 0, 0.28);
+    }
+    50% {
+        box-shadow: 0 0 21px rgba(255, 215, 0, 0.56), 0 6px 14px rgba(255, 215, 0, 0.42);
+    }
+}
+
+@keyframes pulsePurple {
+    0%, 100% {
+        box-shadow: 0 0 14px rgba(155, 89, 182, 0.42), 0 4px 10.5px rgba(155, 89, 182, 0.28);
+    }
+    50% {
+        box-shadow: 0 0 21px rgba(155, 89, 182, 0.56), 0 6px 14px rgba(155, 89, 182, 0.42);
+    }
+}
+
+/* Made with Bob */

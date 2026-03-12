@@ -4,12 +4,55 @@
 const notificationBtn = document.getElementById('notificationBtn');
 const refreshBtn = document.getElementById('refreshBtn');
 const settingsBtn = document.getElementById('settingsBtn');
+const syncTimeText = document.getElementById('syncTimeText');
 
 // Initialize Components
 let quickJotComponent;
 let entriesComponent;
 let syncManager;
 let syncModalComponent;
+let syncTimeInterval;
+
+// Sync time update function
+async function updateSyncTime() {
+    if (!syncTimeText) return;
+
+    try {
+        const result = await new Promise((resolve) => {
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                chrome.storage.local.get(['standupnow_sync_config'], (result) => {
+                    resolve(result.standupnow_sync_config);
+                });
+            } else {
+                resolve(null);
+            }
+        });
+
+        if (result && result.lastSyncTime) {
+            const lastSync = new Date(result.lastSyncTime);
+            const now = new Date();
+            const diffMs = now - lastSync;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            if (diffMins < 1) {
+                syncTimeText.textContent = 'Just now';
+            } else if (diffMins < 60) {
+                syncTimeText.textContent = `${diffMins}m ago`;
+            } else if (diffMins < 1440) {
+                const hours = Math.floor(diffMins / 60);
+                syncTimeText.textContent = `${hours}h ago`;
+            } else {
+                const days = Math.floor(diffMins / 1440);
+                syncTimeText.textContent = `${days}d ago`;
+            }
+        } else {
+            syncTimeText.textContent = 'Never';
+        }
+    } catch (error) {
+        console.error('Error updating sync time:', error);
+        syncTimeText.textContent = 'Never';
+    }
+}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', async () => {
@@ -29,6 +72,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     syncModalComponent = new SyncModalComponent(syncManager);
     syncModalComponent.init();
     
+    // Start sync time updater
+    updateSyncTime();
+    syncTimeInterval = setInterval(updateSyncTime, 30000); // Update every 30 seconds
+    
     // Connect Quick Jot to Entries - when user submits, add to entries
     quickJotComponent.onSubmit((content) => {
         if (entriesComponent) {
@@ -37,11 +84,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return false;
     });
     
-    // Listen for sync complete events to refresh entries
+    // Listen for sync complete events to refresh entries and sync time
     window.addEventListener('syncComplete', () => {
         if (entriesComponent) {
             entriesComponent.render();
         }
+        updateSyncTime();
     });
 });
 
@@ -71,5 +119,6 @@ settingsBtn.addEventListener('click', () => {
         entriesComponent.clearAll();
     }
 });
+
 
 // Made with Bob

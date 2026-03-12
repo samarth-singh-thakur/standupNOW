@@ -1,0 +1,87 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    background-color: #000000;
+    color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Extension Popup Styles */
+body.extension-popup {
+    min-height: auto;
+    padding: 0;
+    width: 400px;
+    height: 600px;
+}
+
+body.extension-popup .container {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}
+
+/* Container */
+.container {
+    width: 400px;
+    height: 560px;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Root Container with Scroll */
+.root-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-right: 8px;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #2a2a2a #0a0a0a;
+}
+
+/* Custom Scrollbar for Root Container */
+.root-container::-webkit-scrollbar {
+    width: 6px;
+    -webkit-appearance: none;
+}
+
+.root-container::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-radius: 3px;
+}
+
+.root-container::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 3px;
+    min-height: 40px;
+}
+
+.root-container::-webkit-scrollbar-thumb:hover {
+    background: #3a3a3a;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+
+/* Made with Bob */

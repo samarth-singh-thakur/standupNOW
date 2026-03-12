@@ -14,7 +14,9 @@ class EntriesComponent {
         this.loadTemplate();
         this.entriesList = document.getElementById('entriesList');
         this.entryBadge = document.getElementById('entryBadge');
+        this.copyEntriesBtn = document.getElementById('copyEntriesBtn');
         this.setupFilterButtons();
+        this.setupCopyButton();
         this.render();
     }
 
@@ -35,6 +37,9 @@ class EntriesComponent {
                         <button class="filter-btn active" data-filter="today">Today</button>
                         <button class="filter-btn" data-filter="yesterday">Yesterday</button>
                     </div>
+                    <button class="copy-entries-btn" id="copyEntriesBtn" title="Copy Today's Entries">
+                        <img src="src/assets/icons/copy.svg" alt="Copy" class="copy-icon">
+                    </button>
                 </div>
 
                 <!-- Entries List -->
@@ -126,8 +131,97 @@ class EntriesComponent {
                 // Update filter and re-render
                 this.currentFilter = btn.dataset.filter;
                 this.render();
+                this.updateCopyButtonText();
             });
         });
+    }
+
+    // Setup copy button event listener
+    setupCopyButton() {
+        if (this.copyEntriesBtn) {
+            this.copyEntriesBtn.addEventListener('click', () => {
+                this.copyEntries();
+            });
+        }
+    }
+
+    // Update copy button tooltip based on current filter
+    updateCopyButtonText() {
+        if (!this.copyEntriesBtn) return;
+        
+        switch (this.currentFilter) {
+            case 'today':
+                this.copyEntriesBtn.title = "Copy Today's Entries";
+                break;
+            case 'yesterday':
+                this.copyEntriesBtn.title = "Copy Yesterday's Entries";
+                break;
+            case 'all':
+                this.copyEntriesBtn.title = "Copy All Entries";
+                break;
+            default:
+                this.copyEntriesBtn.title = "Copy Entries";
+        }
+    }
+
+    // Copy entries to clipboard
+    async copyEntries() {
+        const entries = await this.loadEntries();
+        const filteredEntries = this.filterEntriesByDate(entries, this.currentFilter);
+        
+        if (filteredEntries.length === 0) {
+            this.showCopyFeedback('No entries to copy', false);
+            return;
+        }
+
+        // Sort entries by time (newest first)
+        const sortedEntries = filteredEntries.sort((a, b) => new Date(b.time) - new Date(a.time));
+        
+        // Format entries for copying
+        let copyText = '';
+        
+        // Add header based on filter
+        if (this.currentFilter === 'today') {
+            copyText = "Today's Standup Entries:\n\n";
+        } else if (this.currentFilter === 'yesterday') {
+            copyText = "Yesterday's Standup Entries:\n\n";
+        } else {
+            copyText = "All Standup Entries:\n\n";
+        }
+        
+        // Add each entry with timestamp
+        sortedEntries.forEach((entry, index) => {
+            const timestamp = this.formatTimestamp(entry.time);
+            copyText += `[${timestamp}]\n${entry.note}\n\n`;
+        });
+        
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(copyText);
+            this.showCopyFeedback('Entries copied to clipboard!', true);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+            this.showCopyFeedback('Failed to copy entries', false);
+        }
+    }
+
+    // Show copy feedback
+    showCopyFeedback(message, success) {
+        if (!this.copyEntriesBtn) return;
+        
+        const originalTitle = this.copyEntriesBtn.title;
+        this.copyEntriesBtn.title = message;
+        
+        if (success) {
+            this.copyEntriesBtn.classList.add('success');
+        } else {
+            this.copyEntriesBtn.classList.add('error');
+        }
+        
+        setTimeout(() => {
+            this.updateCopyButtonText();
+            this.copyEntriesBtn.classList.remove('success', 'error');
+        }, 2000);
     }
 
     // Filter entries by date

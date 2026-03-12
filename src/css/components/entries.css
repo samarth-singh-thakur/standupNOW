@@ -1,0 +1,175 @@
+/* Entries Component Styles */
+.recent-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    min-height: 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFFF00;
+}
+
+.entry-badge {
+    background-color: transparent;
+    border: 1px solid #FFFF00;
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 10px;
+    color: #FFFF00;
+    font-weight: 300;
+}
+
+/* Entries List */
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: scroll;
+    padding-right: 5px;
+    flex: 1;
+    min-height: 0;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #FFFF00 #0a0a0a;
+}
+
+/* Custom Scrollbar */
+.entries-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.entries-list::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-radius: 4px;
+}
+
+.entries-list::-webkit-scrollbar-thumb {
+    background: #FFFF00;
+    border-radius: 4px;
+}
+
+.entries-list::-webkit-scrollbar-thumb:hover {
+    background: #FFD400;
+}
+
+/* Entry Card */
+.entry-card {
+    background-color: #000000;
+    border: 1px solid #FFFF00;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.entry-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 0, 0.07);
+}
+
+.entry-time {
+    font-size: 10px;
+    font-weight: 300;
+    color: #23F508;
+    letter-spacing: 0.3px;
+}
+
+.entry-content {
+    font-size: 12px;
+    font-weight: 400;
+    color: #FFFFFF;
+    line-height: 1.5;
+}
+
+/* Timeline Connector */
+.timeline-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    position: relative;
+}
+
+.timeline-time {
+    position: absolute;
+    font-size: 12px;
+    font-weight: 300;
+    color: #888888;
+    background-color: #1a1a1a;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    left: 15px;
+    transform: none;
+}
+
+/* Animation for new entries */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.entry-card.new {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Fade in animation for filtered entries */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.entry-card.entry-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Stagger animation for multiple entries */
+.entry-card.entry-fade-in:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.entry-card.entry-fade-in:nth-child(2) {
+    animation-delay: 0.05s;
+}
+
+.entry-card.entry-fade-in:nth-child(3) {
+    animation-delay: 0.1s;
+}
+
+.entry-card.entry-fade-in:nth-child(4) {
+    animation-delay: 0.15s;
+}
+
+.entry-card.entry-fade-in:nth-child(5) {
+    animation-delay: 0.2s;
+}
+
+.entry-card.entry-fade-in:nth-child(n+6) {
+    animation-delay: 0.25s;
+}
+
+/* Made with Bob */
