@@ -72,13 +72,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 4px;
 }
 
 .modal-close:hover {
     background-color: #333;
     color: #FFFF00;
+    transform: scale(1.1);
+}
+
+.modal-close:active {
+    transform: scale(0.95);
 }
 
 /* Modal Body */
@@ -519,19 +524,26 @@
     font-weight: 600;
     padding: 12px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
 }
 
 .preset-btn:hover {
     border-color: #FFFF00;
     background-color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 0, 0.2);
+}
+
+.preset-btn:active {
+    transform: translateY(0);
 }
 
 .preset-btn.active {
     background: linear-gradient(135deg, #FFFF00 0%, #FFD400 100%);
     color: #000000;
     border-color: #FFFF00;
+    transform: scale(1.05);
 }
 
 /* Custom Timer Section */

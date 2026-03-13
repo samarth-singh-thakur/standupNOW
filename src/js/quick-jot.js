@@ -160,7 +160,23 @@ class QuickJotComponent {
         if (!this.saveBtn) return;
         
         const hasText = this.getValue().trim().length > 0;
-        this.saveBtn.style.display = hasText ? 'flex' : 'none';
+        
+        if (hasText) {
+            // Show button with animation
+            this.saveBtn.style.display = 'flex';
+            // Force reflow to ensure transition works
+            this.saveBtn.offsetHeight;
+            this.saveBtn.classList.add('visible');
+        } else {
+            // Hide button with animation
+            this.saveBtn.classList.remove('visible');
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                if (!this.saveBtn.classList.contains('visible')) {
+                    this.saveBtn.style.display = 'none';
+                }
+            }, 300);
+        }
     }
 
     // Calculate time elapsed since last entry
@@ -231,23 +247,23 @@ class QuickJotComponent {
             // Hide custom placeholder when user types
             this.input.addEventListener('input', () => {
                 if (this.input.value.trim()) {
-                    customPlaceholder.style.display = 'none';
+                    customPlaceholder.classList.add('hidden');
                 } else {
-                    customPlaceholder.style.display = 'block';
+                    customPlaceholder.classList.remove('hidden');
                 }
             });
             
             // Hide on focus if there's content
             this.input.addEventListener('focus', () => {
                 if (this.input.value.trim()) {
-                    customPlaceholder.style.display = 'none';
+                    customPlaceholder.classList.add('hidden');
                 }
             });
             
             // Show on blur if empty
             this.input.addEventListener('blur', () => {
                 if (!this.input.value.trim()) {
-                    customPlaceholder.style.display = 'block';
+                    customPlaceholder.classList.remove('hidden');
                 }
             });
         }
@@ -256,7 +272,11 @@ class QuickJotComponent {
         customPlaceholder.innerHTML = `<span class="time-part">${timeSince}</span> have passed - what's new?`;
         
         // Show placeholder if input is empty
-        customPlaceholder.style.display = this.input.value.trim() ? 'none' : 'block';
+        if (this.input.value.trim()) {
+            customPlaceholder.classList.add('hidden');
+        } else {
+            customPlaceholder.classList.remove('hidden');
+        }
         
         // Mark input for CSS targeting
         this.input.setAttribute('data-placeholder-time', 'true');
