@@ -130,7 +130,7 @@
     font-size: 13px;
     padding: 10px 12px;
     outline: none;
-    transition: all 0.2s;
+    transition: all 0.3s;
 }
 
 .form-input:focus {
@@ -140,6 +140,35 @@
 
 .form-input:hover:not(:focus) {
     border-color: #FFE44D;
+}
+
+/* Connection Input States */
+.connection-input.input-success {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.05);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.connection-input.input-error {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.05);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.connection-input.input-testing {
+    border-color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.05);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: #3b82f6;
+    }
+    50% {
+        border-color: #60a5fa;
+    }
 }
 
 .form-hint {

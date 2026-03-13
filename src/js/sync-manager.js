@@ -222,7 +222,10 @@ class SyncManager {
         console.log('Added local entries to map:', map.size);
 
         // Phone entries override (phone wins conflicts)
-        phoneEntries.forEach(e => map.set(e.id, e));
+        phoneEntries.forEach(e => {
+            console.log('Adding phone entry:', e.id, e.note.substring(0, 50));
+            map.set(e.id, e);
+        });
         console.log('After adding phone entries, map size:', map.size);
 
         // Filter deleted and sort by time (newest first)
@@ -231,12 +234,19 @@ class SyncManager {
             .sort((a, b) => new Date(b.time) - new Date(a.time));
 
         console.log('Final merged entries count:', mergedEntries.length);
+        console.log('Sample merged entries:', mergedEntries.slice(0, 3).map(e => ({ id: e.id, note: e.note.substring(0, 30) })));
 
-        // Save merged entries
+        // Save merged entries and wait for completion
         return new Promise((resolve) => {
             chrome.storage.local.set({ [this.storageKey]: mergedEntries }, () => {
-                console.log('Merged entries saved to storage');
-                resolve();
+                console.log('✅ Merged entries saved to storage successfully');
+                console.log('Storage key:', this.storageKey);
+                
+                // Verify the save by reading back
+                chrome.storage.local.get([this.storageKey], (result) => {
+                    console.log('✅ Verification: Storage now contains', result[this.storageKey]?.length, 'entries');
+                    resolve();
+                });
             });
         });
     }

@@ -17,7 +17,25 @@ class EntriesComponent {
         this.copyEntriesBtn = document.getElementById('copyEntriesBtn');
         this.setupFilterButtons();
         this.setupCopyButton();
+        this.setupStorageListener();
         this.render();
+    }
+
+    // Setup Chrome storage change listener for auto-refresh
+    setupStorageListener() {
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            chrome.storage.onChanged.addListener((changes, areaName) => {
+                if (areaName === 'local' && changes[this.storageKey]) {
+                    console.log('📦 Storage changed detected!');
+                    console.log('Old entries count:', changes[this.storageKey].oldValue?.length || 0);
+                    console.log('New entries count:', changes[this.storageKey].newValue?.length || 0);
+                    
+                    // Re-render to show updated entries
+                    this.render();
+                }
+            });
+            console.log('✅ Storage listener setup complete');
+        }
     }
 
     // Load the HTML template

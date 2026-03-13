@@ -47,8 +47,7 @@ class SyncModalComponent {
             closeBtn: document.getElementById('closeSyncModal'),
             phoneIP: document.getElementById('phoneIP'),
             phonePort: document.getElementById('phonePort'),
-            testConnectionBtn: document.getElementById('testConnectionBtn'),
-            saveConnectionBtn: document.getElementById('saveConnectionBtn'),
+            connectionHint: document.getElementById('connectionHint'),
             statusDot: document.getElementById('statusDot'),
             statusText: document.getElementById('statusText'),
             statusDetails: document.getElementById('statusDetails'),
@@ -58,6 +57,9 @@ class SyncModalComponent {
             manualSyncBtn: document.getElementById('manualSyncBtn'),
             disableSyncBtn: document.getElementById('disableSyncBtn')
         };
+        
+        // Debounce timer for auto-test
+        this.autoTestTimer = null;
     }
 
     // Setup event listeners
@@ -72,11 +74,9 @@ class SyncModalComponent {
             }
         });
 
-        // Test connection
-        this.elements.testConnectionBtn?.addEventListener('click', () => this.testConnection());
-
-        // Save connection
-        this.elements.saveConnectionBtn?.addEventListener('click', () => this.saveConnection());
+        // Auto-test on input change (debounced)
+        this.elements.phoneIP?.addEventListener('input', () => this.handleInputChange());
+        this.elements.phonePort?.addEventListener('input', () => this.handleInputChange());
 
         // Manual sync
         this.elements.manualSyncBtn?.addEventListener('click', () => this.manualSync());
@@ -85,11 +85,130 @@ class SyncModalComponent {
         this.elements.disableSyncBtn?.addEventListener('click', () => this.disableSync());
     }
 
+    // Handle input change with debouncing
+    handleInputChange() {
+        // Clear existing timer
+        if (this.autoTestTimer) {
+            clearTimeout(this.autoTestTimer);
+        }
+
+        // Reset input styling to neutral
+        this.setInputState('testing');
+
+        // Set new timer for auto-test (1 second after user stops typing)
+        this.autoTestTimer = setTimeout(() => {
+            this.autoTestAndSave();
+        }, 1000);
+    }
+
+    // Set visual state for input fields
+    setInputState(state) {
+        const inputs = document.querySelectorAll('.connection-input');
+        inputs.forEach(input => {
+            input.classList.remove('input-success', 'input-error', 'input-testing');
+            if (state === 'success') {
+                input.classList.add('input-success');
+            } else if (state === 'error') {
+                input.classList.add('input-error');
+            } else if (state === 'testing') {
+                input.classList.add('input-testing');
+            }
+        });
+    }
+
+    // Auto-test connection and save if successful
+    async autoTestAndSave() {
+        const ip = this.elements.phoneIP?.value.trim();
+        const port = this.elements.phonePort?.value.trim();
+
+        if (!ip || !port) {
+            this.setInputState('error');
+            this.updateConnectionHint('Please enter IP address and port', 'error');
+            return;
+        }
+
+        // Validate IP format
+        const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+        if (!ipPattern.test(ip)) {
+            this.setInputState('error');
+            this.updateConnectionHint('Invalid IP address format', 'error');
+            return;
+        }
+
+        // Show testing state
+        this.updateStatus('syncing', 'Testing connection...');
+        this.updateConnectionHint('Testing connection...', 'info');
+
+        const result = await this.syncManager.testConnection(ip, port);
+
+        if (result.success) {
+            // Connection successful - save and enable sync
+            this.setInputState('success');
+            this.updateConnectionHint('✓ Connected and syncing', 'success');
+            this.updateStatus('connected', 'Connected', `Server version: ${result.data?.version || 'unknown'}`);
+            
+            // Auto-save configuration
+            await this.syncManager.configure(ip, port, true);
+            this.updateUI();
+            
+            console.log('✅ Auto-saved connection:', ip, port);
+        } else {
+            // Connection failed
+            this.setInputState('error');
+            this.updateConnectionHint(`✗ ${result.error}`, 'error');
+            this.updateStatus('error', 'Connection failed', result.error);
+        }
+    }
+
+    // Update connection hint message
+    updateConnectionHint(message, type) {
+        if (!this.elements.connectionHint) return;
+        
+        this.elements.connectionHint.textContent = message;
+        this.elements.connectionHint.className = 'form-hint';
+        
+        if (type === 'success') {
+            this.elements.connectionHint.style.color = '#10b981';
+        } else if (type === 'error') {
+            this.elements.connectionHint.style.color = '#ef4444';
+        } else if (type === 'info') {
+            this.elements.connectionHint.style.color = '#3b82f6';
+        } else {
+            this.elements.connectionHint.style.color = '';
+        }
+    }
+
     // Show modal
     show() {
         if (this.overlay) {
             this.overlay.classList.add('active');
+            this.loadSavedConfig();
             this.updateUI();
+        }
+    }
+
+    // Load saved configuration into input fields
+    async loadSavedConfig() {
+        const status = this.syncManager.getStatus();
+        
+        if (status.serverUrl) {
+            // Parse the server URL to extract IP and port
+            try {
+                const url = new URL(status.serverUrl);
+                const ip = url.hostname;
+                const port = url.port || '8080';
+                
+                if (this.elements.phoneIP) {
+                    this.elements.phoneIP.value = ip;
+                }
+                if (this.elements.phonePort) {
+                    this.elements.phonePort.value = port;
+                }
+                
+                console.log('📱 Loaded saved config - IP:', ip, 'Port:', port);
+            } catch (error) {
+                console.error('Error parsing server URL:', error);
+            }
         }
     }
 
@@ -100,74 +219,6 @@ class SyncModalComponent {
         }
     }
 
-    // Test connection
-    async testConnection() {
-        const ip = this.elements.phoneIP?.value.trim();
-        const port = this.elements.phonePort?.value.trim();
-
-        if (!ip || !port) {
-            this.showToast('Please enter IP address and port', 'error');
-            return;
-        }
-
-        // Validate IP format
-        const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-        if (!ipPattern.test(ip)) {
-            this.showToast('Invalid IP address format', 'error');
-            return;
-        }
-
-        this.updateStatus('syncing', 'Testing connection...');
-        this.elements.testConnectionBtn.disabled = true;
-
-        const result = await this.syncManager.testConnection(ip, port);
-
-        this.elements.testConnectionBtn.disabled = false;
-
-        if (result.success) {
-            this.updateStatus('connected', 'Connection successful!', `Server version: ${result.data?.version || 'unknown'}`);
-            this.showToast('Connection test successful!', 'success');
-        } else {
-            this.updateStatus('error', 'Connection failed', result.error);
-            this.showToast(`Connection failed: ${result.error}`, 'error');
-        }
-    }
-
-    // Save connection and enable sync
-    async saveConnection() {
-        const ip = this.elements.phoneIP?.value.trim();
-        const port = this.elements.phonePort?.value.trim();
-
-        if (!ip || !port) {
-            this.showToast('Please enter IP address and port', 'error');
-            return;
-        }
-
-        // Validate IP format
-        const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-        if (!ipPattern.test(ip)) {
-            this.showToast('Invalid IP address format', 'error');
-            return;
-        }
-
-        this.elements.saveConnectionBtn.disabled = true;
-
-        // Test connection first
-        const testResult = await this.syncManager.testConnection(ip, port);
-        
-        if (!testResult.success) {
-            this.showToast(`Cannot save: ${testResult.error}`, 'error');
-            this.elements.saveConnectionBtn.disabled = false;
-            return;
-        }
-
-        // Configure sync
-        await this.syncManager.configure(ip, port, true);
-        
-        this.updateUI();
-        this.showToast('Sync enabled successfully!', 'success');
-        this.elements.saveConnectionBtn.disabled = false;
-    }
 
     // Manual sync
     async manualSync() {
@@ -182,8 +233,16 @@ class SyncModalComponent {
             this.updateUI();
             this.showToast(`Sync complete! Sent: ${result.entriesSent}, Received: ${result.entriesReceived}`, 'success');
             
-            // Notify other components to refresh
-            window.dispatchEvent(new CustomEvent('syncComplete'));
+            // Wait a bit to ensure storage write completes, then notify other components to refresh
+            setTimeout(() => {
+                console.log('🔄 Dispatching syncComplete event');
+                window.dispatchEvent(new CustomEvent('syncComplete', {
+                    detail: {
+                        entriesReceived: result.entriesReceived,
+                        entriesSent: result.entriesSent
+                    }
+                }));
+            }, 100);
         } else {
             this.updateStatus('error', 'Sync failed', result.error);
             this.showToast(`Sync failed: ${result.error}`, 'error');
