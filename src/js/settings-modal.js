@@ -3,9 +3,9 @@ class SettingsModalComponent {
     constructor() {
         this.overlay = null;
         this.closeBtn = null;
-        this.cancelBtn = null;
-        this.saveBtn = null;
         this.clearAllBtn = null;
+        this.exportBtn = null;
+        this.importBtn = null;
         this.customTimerToggle = null;
         this.customTimerInputs = null;
         this.timerPreview = null;
@@ -17,6 +17,7 @@ class SettingsModalComponent {
         this.isCustom = false;
         this.storageKey = 'standupnow_timer_config';
         this.entriesKey = 'standupnow_entries';
+        this.saveTimeout = null; // For debouncing auto-save
     }
 
     // Initialize the component
@@ -50,9 +51,9 @@ class SettingsModalComponent {
     setupElements() {
         this.overlay = document.getElementById('settingsModalOverlay');
         this.closeBtn = document.getElementById('settingsModalClose');
-        this.cancelBtn = document.getElementById('settingsCancelBtn');
-        this.saveBtn = document.getElementById('settingsSaveBtn');
         this.clearAllBtn = document.getElementById('clearAllEntriesBtn');
+        this.exportBtn = document.getElementById('exportEntriesBtn');
+        this.importBtn = document.getElementById('importEntriesBtn');
         this.customTimerToggle = document.getElementById('customTimerToggle');
         this.customTimerInputs = document.getElementById('customTimerInputs');
         this.timerPreview = document.getElementById('timerPreview');
@@ -98,7 +99,6 @@ class SettingsModalComponent {
     setupEventListeners() {
         // Close modal
         this.closeBtn?.addEventListener('click', () => this.hide());
-        this.cancelBtn?.addEventListener('click', () => this.hide());
         
         // Click outside to close
         this.overlay?.addEventListener('click', (e) => {
@@ -107,16 +107,17 @@ class SettingsModalComponent {
             }
         });
 
-        // Preset buttons
+        // Preset buttons - auto-save on click
         this.presetButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 const minutes = parseInt(btn.dataset.minutes);
                 this.setTimerMinutes(minutes, false);
+                await this.autoSaveSettings();
             });
         });
 
-        // Custom timer toggle
-        this.customTimerToggle?.addEventListener('change', (e) => {
+        // Custom timer toggle - auto-save on change
+        this.customTimerToggle?.addEventListener('change', async (e) => {
             this.isCustom = e.target.checked;
             this.customTimerInputs.style.display = this.isCustom ? 'flex' : 'none';
             
@@ -127,29 +128,25 @@ class SettingsModalComponent {
                 // Default to 1 hour if unchecking custom
                 this.setTimerMinutes(60, false);
             }
+            await this.autoSaveSettings();
         });
 
-        // Custom timer inputs
+        // Custom timer inputs - auto-save on input with debounce
         [this.timerDays, this.timerHours, this.timerMinutes].forEach(input => {
             input?.addEventListener('input', () => {
                 this.calculateCustomTimer();
+                this.debouncedAutoSave();
             });
         });
 
-        // Save button
-        this.saveBtn?.addEventListener('click', async () => {
-            await this.saveSettings();
-            
-            // Notify background to update timer
-            chrome.runtime.sendMessage({
-                type: 'UPDATE_TIMER_INTERVAL',
-                timerMinutes: this.currentTimerMinutes
-            }).catch(error => {
-                console.log('Timer interval update message sent:', error);
-            });
-            
-            this.showSaveSuccess();
-            setTimeout(() => this.hide(), 1500);
+        // Export entries
+        this.exportBtn?.addEventListener('click', () => {
+            this.exportEntries();
+        });
+
+        // Import entries
+        this.importBtn?.addEventListener('click', () => {
+            this.importEntries();
         });
 
         // Clear all entries
@@ -239,22 +236,117 @@ class SettingsModalComponent {
         }
     }
 
-    // Show save success feedback
-    showSaveSuccess() {
-        const originalText = this.saveBtn.innerHTML;
-        this.saveBtn.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="9" cy="9" r="8" fill="currentColor"/>
-                <path d="M5 9L8 12L13 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Saved!
-        `;
-        this.saveBtn.disabled = true;
+    // Auto-save settings (immediate)
+    async autoSaveSettings() {
+        await this.saveSettings();
         
-        setTimeout(() => {
-            this.saveBtn.innerHTML = originalText;
-            this.saveBtn.disabled = false;
-        }, 1500);
+        // Notify background to update timer
+        chrome.runtime.sendMessage({
+            type: 'UPDATE_TIMER_INTERVAL',
+            timerMinutes: this.currentTimerMinutes
+        }).catch(error => {
+            console.log('Timer interval update message sent:', error);
+        });
+    }
+
+    // Debounced auto-save for input fields
+    debouncedAutoSave() {
+        if (this.saveTimeout) {
+            clearTimeout(this.saveTimeout);
+        }
+        
+        this.saveTimeout = setTimeout(async () => {
+            await this.autoSaveSettings();
+        }, 500); // 500ms debounce
+    }
+
+    // Export entries to JSON file
+    exportEntries() {
+        chrome.storage.local.get([this.entriesKey], (result) => {
+            const entries = result[this.entriesKey] || [];
+            
+            if (entries.length === 0) {
+                alert('No entries to export.');
+                return;
+            }
+            
+            // Create JSON blob
+            const dataStr = JSON.stringify(entries, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Generate filename with current date
+            const date = new Date().toISOString().split('T')[0];
+            link.download = `standupnow-entries-${date}.json`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Clean up
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    // Import entries from JSON file
+    importEntries() {
+        // Create file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json,.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedEntries = JSON.parse(event.target.result);
+                    
+                    // Validate entries format
+                    if (!Array.isArray(importedEntries)) {
+                        alert('Invalid file format. Expected an array of entries.');
+                        return;
+                    }
+                    
+                    // Get existing entries
+                    chrome.storage.local.get([this.entriesKey], (result) => {
+                        const existingEntries = result[this.entriesKey] || [];
+                        
+                        // Merge entries (avoid duplicates by ID)
+                        const existingIds = new Set(existingEntries.map(e => e.id));
+                        const newEntries = importedEntries.filter(e => !existingIds.has(e.id));
+                        
+                        const mergedEntries = [...existingEntries, ...newEntries];
+                        
+                        // Sort by timestamp (newest first)
+                        mergedEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        
+                        // Save merged entries
+                        chrome.storage.local.set({ [this.entriesKey]: mergedEntries }, () => {
+                            alert(`Successfully imported ${newEntries.length} new entries.`);
+                            
+                            // Dispatch event to refresh entries list
+                            window.dispatchEvent(new CustomEvent('entriesUpdated'));
+                        });
+                    });
+                } catch (error) {
+                    console.error('Error parsing import file:', error);
+                    alert('Error reading file. Please ensure it is a valid JSON file.');
+                }
+            };
+            
+            reader.readAsText(file);
+        };
+        
+        // Trigger file selection
+        input.click();
     }
 
     // Confirm clear all entries
