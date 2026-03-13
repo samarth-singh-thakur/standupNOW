@@ -2,7 +2,7 @@
 .recent-entries {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
     flex: 1;
     min-height: 0;
 }
@@ -11,22 +11,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 4px;
 }
 
 .section-title {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 16px;
+    font-weight: 700;
     color: #FFFF00;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .entry-badge {
-    background-color: transparent;
-    border: 1px solid #FFFF00;
-    border-radius: 12px;
-    padding: 4px 12px;
-    font-size: 10px;
+    background-color: rgba(255, 255, 0, 0.1);
+    border: 1.5px solid #FFFF00;
+    border-radius: 14px;
+    padding: 5px 14px;
+    font-size: 11px;
     color: #FFFF00;
-    font-weight: 300;
+    font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
 /* Entries List */
@@ -64,33 +68,55 @@
 
 /* Entry Card */
 .entry-card {
-    background-color: #000000;
-    border: 1px solid #FFFF00;
-    border-radius: 8px;
-    padding: 15px;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    border: 1.5px solid #FFFF00;
+    border-radius: 10px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.entry-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #FFFF00 0%, #23F508 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.entry-card:hover::before {
+    opacity: 1;
 }
 
 .entry-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 255, 0, 0.07);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 255, 0, 0.15);
+    border-color: #FFD700;
 }
 
 .entry-time {
-    font-size: 10px;
-    font-weight: 300;
+    font-size: 11px;
+    font-weight: 600;
     color: #23F508;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0.9;
 }
 
 .entry-content {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 400;
-    color: #FFFFFF;
-    line-height: 1.5;
+    color: #E8E8E8;
+    line-height: 1.6;
+    letter-spacing: 0.2px;
 }
 
 /* Timeline Connector */
@@ -104,15 +130,16 @@
 
 .timeline-time {
     position: absolute;
-    font-size: 12px;
-    font-weight: 300;
-    color: #888888;
-    background-color: #1a1a1a;
-    padding: 2px 8px;
-    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 400;
+    color: #666666;
+    background-color: transparent;
+    padding: 2px 0;
+    border-radius: 0;
     letter-spacing: 0.3px;
     left: 15px;
     transform: none;
+    border: none;
 }
 
 /* Animation for new entries */
