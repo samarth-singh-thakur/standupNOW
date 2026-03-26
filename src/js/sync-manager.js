@@ -80,17 +80,22 @@ class SyncManager {
         }
     }
 
-    // Start auto-sync timer
-    async startAutoSync() {
+    // Start auto-sync timer (non-blocking)
+    startAutoSync() {
         // Clear existing interval
         this.stopAutoSync();
 
-        // Sync immediately
-        await this.syncWithPhone();
+        // Sync immediately in background (don't await - fire and forget)
+        this.syncWithPhone().catch(error => {
+            console.error('Initial sync error:', error);
+        });
 
         // Set up recurring sync
-        this.syncInterval = setInterval(async () => {
-            await this.syncWithPhone();
+        this.syncInterval = setInterval(() => {
+            // Fire and forget - don't block the interval
+            this.syncWithPhone().catch(error => {
+                console.error('Auto-sync error:', error);
+            });
         }, this.AUTO_SYNC_INTERVAL);
 
         this.notifyListeners('autoSyncStarted');
@@ -107,15 +112,17 @@ class SyncManager {
 
     // Perform bidirectional sync with phone
     async syncWithPhone() {
-        if (this.isSyncing) {
-            console.log('Sync already in progress, skipping...');
-            return { success: false, error: 'Sync in progress' };
-        }
-
         if (!this.config.enabled || !this.config.serverUrl) {
             return { success: false, error: 'Sync not configured' };
         }
 
+        // Check if sync is already in progress, but don't block - just skip this sync
+        if (this.isSyncing) {
+            console.log('Sync already in progress, skipping this sync cycle...');
+            return { success: false, error: 'Sync in progress', skipped: true };
+        }
+
+        // Set flag asynchronously without blocking
         this.isSyncing = true;
         this.notifyListeners('syncStarted');
 
@@ -182,13 +189,6 @@ class SyncManager {
             this.config.lastSyncTime = syncResponse.serverTime || new Date().toISOString();
             await this.saveConfig();
 
-            this.isSyncing = false;
-            this.notifyListeners('syncComplete', {
-                success: true,
-                entriesReceived: phoneEntries.length,
-                entriesSent: entriesToSync.length
-            });
-
             return {
                 success: true,
                 entriesReceived: phoneEntries.length,
@@ -196,9 +196,19 @@ class SyncManager {
             };
 
         } catch (error) {
-            this.isSyncing = false;
+            console.error('Sync error:', error);
             this.notifyListeners('syncError', { error: error.message });
             return { success: false, error: error.message };
+        } finally {
+            // Always release the lock in finally block to ensure it's released even on error
+            this.isSyncing = false;
+            
+            // Notify completion after releasing the lock
+            this.notifyListeners('syncComplete', {
+                success: true,
+                entriesReceived: phoneEntries?.length || 0,
+                entriesSent: entriesToSync?.length || 0
+            });
         }
     }
 

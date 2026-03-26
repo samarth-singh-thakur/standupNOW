@@ -236,17 +236,22 @@ class SettingsModalComponent {
         }
     }
 
-    // Auto-save settings (immediate)
+    // Auto-save settings (immediate, non-blocking)
     async autoSaveSettings() {
-        await this.saveSettings();
-        
-        // Notify background to update timer
-        chrome.runtime.sendMessage({
-            type: 'UPDATE_TIMER_INTERVAL',
-            timerMinutes: this.currentTimerMinutes
-        }).catch(error => {
-            console.log('Timer interval update message sent:', error);
+        // Save settings asynchronously without blocking UI
+        this.saveSettings().catch(error => {
+            console.error('Error saving settings:', error);
         });
+        
+        // Notify background to update timer (fire and forget)
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.sendMessage({
+                type: 'UPDATE_TIMER_INTERVAL',
+                timerMinutes: this.currentTimerMinutes
+            }).catch(error => {
+                console.log('Timer interval update message sent:', error);
+            });
+        }
     }
 
     // Debounced auto-save for input fields
@@ -361,29 +366,38 @@ class SettingsModalComponent {
         }
     }
 
-    // Clear all entries
-    clearAllEntries() {
-        chrome.storage.local.remove([this.entriesKey], () => {
-            alert('All entries have been cleared.');
-            
-            // Dispatch event to refresh entries list
-            window.dispatchEvent(new CustomEvent('entriesCleared'));
-            
-            // Reset timer
-            chrome.runtime.sendMessage({
-                type: 'RESET_TIMER',
-                entryTime: new Date().toISOString()
-            }).catch(error => {
-                console.log('Timer reset message sent:', error);
+    // Clear all entries (async, non-blocking)
+    async clearAllEntries() {
+        return new Promise((resolve) => {
+            chrome.storage.local.remove([this.entriesKey], () => {
+                alert('All entries have been cleared.');
+                
+                // Dispatch event to refresh entries list
+                window.dispatchEvent(new CustomEvent('entriesCleared'));
+                
+                // Reset timer (fire and forget)
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    chrome.runtime.sendMessage({
+                        type: 'RESET_TIMER',
+                        entryTime: new Date().toISOString()
+                    }).catch(error => {
+                        console.log('Timer reset message sent:', error);
+                    });
+                }
+                
+                resolve();
             });
         });
     }
 
-    // Show modal
-    show() {
+    // Show modal (non-blocking)
+    async show() {
         if (this.overlay) {
-            this.overlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            // Use requestAnimationFrame to ensure smooth UI updates
+            requestAnimationFrame(() => {
+                this.overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
         }
     }
 

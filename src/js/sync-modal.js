@@ -116,8 +116,8 @@ class SyncModalComponent {
         });
     }
 
-    // Auto-test connection and save if successful
-    async autoTestAndSave() {
+    // Auto-test connection and save if successful (non-blocking)
+    autoTestAndSave() {
         const ip = this.elements.phoneIP?.value.trim();
         const port = this.elements.phonePort?.value.trim();
 
@@ -139,25 +139,36 @@ class SyncModalComponent {
         this.updateStatus('syncing', 'Testing connection...');
         this.updateConnectionHint('Testing connection...', 'info');
 
-        const result = await this.syncManager.testConnection(ip, port);
-
-        if (result.success) {
-            // Connection successful - save and enable sync
-            this.setInputState('success');
-            this.updateConnectionHint('✓ Connected and syncing', 'success');
-            this.updateStatus('connected', 'Connected', `Server version: ${result.data?.version || 'unknown'}`);
-            
-            // Auto-save configuration
-            await this.syncManager.configure(ip, port, true);
-            this.updateUI();
-            
-            console.log('✅ Auto-saved connection:', ip, port);
-        } else {
-            // Connection failed
-            this.setInputState('error');
-            this.updateConnectionHint(`✗ ${result.error}`, 'error');
-            this.updateStatus('error', 'Connection failed', result.error);
-        }
+        // Run test in background without blocking UI
+        this.syncManager.testConnection(ip, port)
+            .then(result => {
+                if (result.success) {
+                    // Connection successful - save and enable sync
+                    this.setInputState('success');
+                    this.updateConnectionHint('✓ Connected and syncing', 'success');
+                    this.updateStatus('connected', 'Connected', `Server version: ${result.data?.version || 'unknown'}`);
+                    
+                    // Auto-save configuration (fire and forget)
+                    this.syncManager.configure(ip, port, true)
+                        .then(() => {
+                            this.updateUI();
+                            console.log('✅ Auto-saved connection:', ip, port);
+                        })
+                        .catch(error => {
+                            console.error('Error saving config:', error);
+                        });
+                } else {
+                    // Connection failed
+                    this.setInputState('error');
+                    this.updateConnectionHint(`✗ ${result.error}`, 'error');
+                    this.updateStatus('error', 'Connection failed', result.error);
+                }
+            })
+            .catch(error => {
+                this.setInputState('error');
+                this.updateConnectionHint(`✗ ${error.message}`, 'error');
+                this.updateStatus('error', 'Connection error', error.message);
+            });
     }
 
     // Update connection hint message
@@ -220,33 +231,45 @@ class SyncModalComponent {
     }
 
 
-    // Manual sync
-    async manualSync() {
+    // Manual sync (non-blocking UI)
+    manualSync() {
         this.elements.manualSyncBtn.disabled = true;
         this.updateStatus('syncing', 'Syncing...');
 
-        const result = await this.syncManager.syncWithPhone();
+        // Run sync in background without blocking UI
+        this.syncManager.syncWithPhone()
+            .then(result => {
+                this.elements.manualSyncBtn.disabled = false;
 
-        this.elements.manualSyncBtn.disabled = false;
-
-        if (result.success) {
-            this.updateUI();
-            this.showToast(`Sync complete! Sent: ${result.entriesSent}, Received: ${result.entriesReceived}`, 'success');
-            
-            // Wait a bit to ensure storage write completes, then notify other components to refresh
-            setTimeout(() => {
-                console.log('🔄 Dispatching syncComplete event');
-                window.dispatchEvent(new CustomEvent('syncComplete', {
-                    detail: {
-                        entriesReceived: result.entriesReceived,
-                        entriesSent: result.entriesSent
-                    }
-                }));
-            }, 100);
-        } else {
-            this.updateStatus('error', 'Sync failed', result.error);
-            this.showToast(`Sync failed: ${result.error}`, 'error');
-        }
+                if (result.success) {
+                    this.updateUI();
+                    this.showToast(`Sync complete! Sent: ${result.entriesSent}, Received: ${result.entriesReceived}`, 'success');
+                    
+                    // Wait a bit to ensure storage write completes, then notify other components to refresh
+                    setTimeout(() => {
+                        console.log('🔄 Dispatching syncComplete event');
+                        window.dispatchEvent(new CustomEvent('syncComplete', {
+                            detail: {
+                                entriesReceived: result.entriesReceived,
+                                entriesSent: result.entriesSent
+                            }
+                        }));
+                    }, 100);
+                } else if (!result.skipped) {
+                    // Only show error if not skipped
+                    this.updateStatus('error', 'Sync failed', result.error);
+                    this.showToast(`Sync failed: ${result.error}`, 'error');
+                } else {
+                    // Sync was skipped because one is already in progress
+                    this.updateStatus('syncing', 'Sync in progress', 'Please wait...');
+                    this.elements.manualSyncBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                this.elements.manualSyncBtn.disabled = false;
+                this.updateStatus('error', 'Sync error', error.message);
+                this.showToast(`Sync error: ${error.message}`, 'error');
+            });
     }
 
     // Disable sync

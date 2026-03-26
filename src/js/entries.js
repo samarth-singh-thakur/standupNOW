@@ -88,14 +88,19 @@ class EntriesComponent {
         });
     }
 
-    // Save entries to Chrome storage
-    saveEntries(entries) {
-        if (typeof chrome !== 'undefined' && chrome.storage) {
-            chrome.storage.local.set({ [this.storageKey]: entries });
-        } else {
-            // Fallback to localStorage for testing
-            localStorage.setItem(this.storageKey, JSON.stringify(entries));
-        }
+    // Save entries to Chrome storage (async, non-blocking)
+    async saveEntries(entries) {
+        return new Promise((resolve) => {
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                chrome.storage.local.set({ [this.storageKey]: entries }, () => {
+                    resolve();
+                });
+            } else {
+                // Fallback to localStorage for testing
+                localStorage.setItem(this.storageKey, JSON.stringify(entries));
+                resolve();
+            }
+        });
     }
 
     // Generate UUID v4
@@ -398,7 +403,8 @@ class EntriesComponent {
         };
         
         entries.push(newEntry);
-        this.saveEntries(entries);
+        // Save asynchronously without blocking
+        await this.saveEntries(entries);
         await this.render();
         
         // Add animation class to new entry

@@ -89,14 +89,22 @@ async function scheduleAlarm(nextAlarmTime) {
     // Calculate when to fire (in minutes from now)
     const now = new Date();
     const alarmTime = new Date(nextAlarmTime);
-    const delayMinutes = Math.max(0, (alarmTime - now) / (60 * 1000));
+    const delayMinutes = Math.max(0.1, (alarmTime - now) / (60 * 1000)); // Minimum 0.1 minutes (6 seconds)
     
-    console.log(`Scheduling alarm in ${delayMinutes.toFixed(2)} minutes`);
+    console.log(`Scheduling alarm in ${delayMinutes.toFixed(2)} minutes (at ${alarmTime.toLocaleString()})`);
     
     // Schedule new alarm
     await chrome.alarms.create(TIMER_ALARM_NAME, {
         delayInMinutes: delayMinutes
     });
+    
+    // Verify alarm was created
+    const alarm = await chrome.alarms.get(TIMER_ALARM_NAME);
+    if (alarm) {
+        console.log('Alarm verified:', new Date(alarm.scheduledTime).toLocaleString());
+    } else {
+        console.error('Failed to create alarm!');
+    }
 }
 
 // Check and schedule timer (called on startup or when entries change)
@@ -111,7 +119,8 @@ async function checkAndScheduleTimer() {
     const now = new Date();
     const nextAlarmTime = new Date(state.nextAlarmTime);
     
-    // If alarm time has passed, fire immediately
+    // If alarm time has passed, fire immediately ONLY on startup/initialization
+    // NOT when a new entry is added (that should reset the timer to future)
     if (nextAlarmTime <= now) {
         console.log('Timer already expired, opening tab now');
         await openTimerEndTab();
@@ -145,7 +154,19 @@ async function openTimerEndTab() {
     } else {
         // Create new tab
         console.log('Creating new timer-end tab');
-        await chrome.tabs.create({ url: timerEndUrl });
+        await chrome.tabs.create({ url: timerEndUrl, active: true });
+    }
+}
+
+// Close any open timer-end tabs
+async function closeTimerEndTabs() {
+    const timerEndUrl = chrome.runtime.getURL('timer-end.html');
+    const tabs = await chrome.tabs.query({});
+    const timerEndTabs = tabs.filter(tab => tab.url === timerEndUrl);
+    
+    for (const tab of timerEndTabs) {
+        console.log('Closing timer-end tab:', tab.id);
+        await chrome.tabs.remove(tab.id);
     }
 }
 
@@ -170,7 +191,13 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
             
             // Get the latest entry
             const latestEntry = newEntries[0]; // Already sorted by time (newest first)
+            
+            // Reset timer with the new entry time
+            // This will schedule the alarm for the future (entry time + interval)
             await updateTimerState(latestEntry.time);
+            
+            // Close any open timer-end tabs since user just made an entry
+            await closeTimerEndTabs();
         }
     }
 });
